@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "compressor.h"
+
+#define DEFAULT_DICTIONARY_SIZE 4096
+// TODO scegliere size di default
 
 // Global variables
 
@@ -9,10 +13,6 @@ int verbose_flag = 0;
 
 // Support functions
 
-void print_verbose(const char* output){
-  if (verbose_flag)
-    printf(output);
-}
 
 
 
@@ -31,12 +31,13 @@ int main (int argc, char **argv)
   char *output_value = NULL;
 
   int index;
-  int c;
+  int current_option;
+  int dictionary_size;
 
   opterr = 0;
 
-  while ((c = getopt (argc, argv, "cdl:i:o:v")) != -1) {
-    switch (c) {
+  while ((current_option = getopt (argc, argv, "cdl:i:o:v")) != -1) {
+    switch (current_option) {
         case 'c':
         compressor_flag = 1;
         break;
@@ -93,10 +94,28 @@ int main (int argc, char **argv)
 
   if (compressor_flag){
 
-    print_verbose("Compression phase ----\n");
+    if (verbose_flag)
+      printf("Compression phase ----\n");
 
     if (input_flag){
-      //TODO Chiamata compressore
+
+      if(length_flag){
+
+        dictionary_size = atoi(length_value);
+        if(dictionary_size <= 0){
+          dictionary_size = DEFAULT_DICTIONARY_SIZE;
+        }
+      }
+
+      else
+        dictionary_size = DEFAULT_DICTIONARY_SIZE;
+
+      if (verbose_flag)
+        printf("Dictionary size: %d",dictionary_size);
+
+      // Chiamata al compressore
+      compress(input_value,output_value,dictionary_size);
+
     } else {
       printf("Input file missing\nSpecify the input file with -i option, followed by name:\n"
                      "-i <filename>\n");
@@ -105,7 +124,8 @@ int main (int argc, char **argv)
 
   } else if (decompressor_flag){
 
-    print_verbose("Decompression phase ----\n");
+    if (verbose_flag)
+      printf("Decompression phase ----\n");
 
     if (input_flag){
       //TODO Chiamata decompressore
