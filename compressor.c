@@ -39,6 +39,8 @@ void compress(const char * input_filename, const char * output_file_name, int di
             // Read a char (Read operation is buffered inside)
             fread(&current_symbol, 1, 1, file_pointer);
 
+            //TODO CHECK EOF
+
             if(first_step && !first_global_step){
                 waiting_new_key -> code = current_symbol;
                 // TODO Controllare il caso in cui il dizionario è saturo e non va più aggiornato! -> condizione node_count == dictionary_size
