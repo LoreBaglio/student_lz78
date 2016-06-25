@@ -93,14 +93,21 @@ FILE* open_file(const char* filename, u_int mode)
 
 void read_data(void* dest, int n, int size, FILE* fp)
 {
-	if (fread(dest, n, size, fp) < size){
+	int ret = fread(dest, n, size, fp);
+	if(feof(fp)){
+		return;
+	}
+	if (ret < size){
+		printf("read(): error in reading data\n");
 		exit(1);
 	}
 }
 
 void write_data(void* sr, int n, int size, FILE* fp)
 {
-	if(fwrite(sr, n, size, fp) < size){
+	int ret = fwrite(sr, n, size, fp);
+	if(ret < size){
+		printf("write(): error in writing data\n");
 		exit(1);
 	}
 }
@@ -109,18 +116,17 @@ void insert_header(const char* filename, int dictionary_size)
 {
 	FILE* fp;
 	struct file_header* head;
-	char* text;
+	void* text;
 	int size = 0;
 	
 	head = (struct file_header*)malloc(sizeof(struct file_header));
 	get_header(filename, head, dictionary_size);
 	
 	size = head->file_size;
-	text = (char*)malloc(size + 1);
+	text = malloc(size);
 
 	fp = open_file(filename, READ);
 	read_data(text, 1, head->file_size, fp);
-	text[size] = '\0';
 	fclose(fp);
 		
 	fp = open_file(filename, WRITE);
@@ -153,19 +159,17 @@ void insert_header(const char* filename, int dictionary_size)
 	size = sizeof(int32_t);
 	write_data((void*)&(head->checksum), 1, size, fp);
 
-	size = strlen(text);
-	write_data((void*)(text), 1, size, fp);
+	size =  head->file_size;
+	write_data(text, 1, size, fp);
 
 	fclose(fp);
 }
 
-void read_header(const char* filename)
+int read_header(struct file_header* head, const char* filename)
 {
 	FILE* fp;
-	struct file_header* head;
 	int size;
-
-	head = (struct file_header*)malloc(sizeof(struct file_header));
+	int ret;
 	
 	fp = open_file(filename, READ);
 	
@@ -194,6 +198,7 @@ void read_header(const char* filename)
 	size = sizeof(int32_t);
 	read_data((void*)&(head->checksum), 1, size, fp);
 	
-	//print_header(head);
+	ret = (int)ftell(fp);
+	return ret;
 }
 

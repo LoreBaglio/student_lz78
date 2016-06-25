@@ -35,7 +35,7 @@ void compare_filenames(const char* input_name, const char* output_name);
 void read_data(void* dest, int n, int size, FILE* fp);
 void write_data(void* sr, int n, int size, FILE* fp);
 void insert_header(const char* filename, int dictionary_size);
-void read_header(const char* filename);
+int read_header(struct file_header*, const char* filename);
 // http://stackoverflow.com/questions/21001659/crc32-algorithm-implementation-in-c-without-a-look-up-table-and-with-a-public-li
 //uint32_t crc32b(const char *);
 
