@@ -23,7 +23,7 @@ void decompress(const char * input_filename, const char * output_file_name, int 
 	//inizializzo il nodo radice
 	decompressor -> dictionary[0].c = '0';
 	decompressor -> dictionary[0].parent = 0;
-	//FIXME inizializzare anche i 256 figli?
+	//FIXME inizializzare anche i 256 figli? Se si vol far quella ottimizzata yes :)
 
 	input_file = open_file(input_filename, READ);
 	output_file = open_file(output_file_name, APPEND);

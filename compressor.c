@@ -6,6 +6,7 @@
 struct compressor_data {
     hash_table * dictionary;
     int node_count;
+    int full_dictionary;
 };
 
 void compress(const char * input_filename, const char * output_file_name, int dictionary_size) {
@@ -13,58 +14,79 @@ void compress(const char * input_filename, const char * output_file_name, int di
     struct compressor_data * compressor = malloc(sizeof(struct compressor_data));
 
     FILE* file_pointer;
+    FILE* out_fp;
     struct file_header* header = malloc(sizeof(struct file_header));
 
     // Variables for each step of lookup
-    int parent_node = 0;
+    uint16_t parent_node = 0;       //FIXME Assicurarsi che il dizionario sia massimo 2^16 entry (64KB)
+    //FIXME parent node su 8 bit se il dizionario è a 256 entry -> usare bitio?? per scrivere parent node a 7 bit se 128 entry, 9 bit se 512 etc??
     char current_symbol;
     struct table_key * node_key;
     int child_node = 0;
     struct table_key * waiting_new_key;
-    int first_step = 1;
-    int first_global_step = 1;  // FIXME Orribile variabile non più usata. Potrebbe essere ottimizzata sta cosa
+    int update_dictionary;  // Used when it's necessary to create a new node on the dictionary
 
     compressor -> dictionary = create(dictionary_size);
     compressor -> node_count = 1;
+    compressor -> full_dictionary = 0;
 
     // Prepare all characters as first children of the root of the tree
     init_tree_with_first_children(compressor,ASCII_ALPHABET);
 
     file_pointer = get_file(input_filename,header,dictionary_size);
+    out_fp = open_file(output_file_name,WRITE);
     node_key = malloc(sizeof(table_key));
     waiting_new_key = malloc(sizeof(table_key));    // This is for new node to be created
 
-        while(1) {
+    // ==========================
+    // First step
+    // ==========================
+
+    // Read first char (Read operation is buffered inside)
+    fread(&current_symbol, 1, 1, file_pointer);
+
+    //Prepare key for lookup
+    node_key->code = current_symbol;
+    node_key->father = parent_node;
+
+    // Dictionary lookup (here is populated only with first 256 characters) so it will fail at first time
+    child_node = get(compressor->dictionary, node_key);
+    write_data(&parent_node,1,sizeof(parent_node),out_fp);
+    waiting_new_key->father = parent_node;
+    update_dictionary = 1;
+
+        while(!feof(file_pointer)) {
 
             // Read a char (Read operation is buffered inside)
             fread(&current_symbol, 1, 1, file_pointer);
 
-            //TODO CHECK EOF
+            // Check full dictionary
+            if( !full_dictionary && update_dictionary){
 
-            if(first_step && !first_global_step){
                 waiting_new_key -> code = current_symbol;
-                // TODO Controllare il caso in cui il dizionario è saturo e non va più aggiornato! -> condizione node_count == dictionary_size
                 // Increment node_count and put as new child id
-                put(compressor -> dictionary, waiting_new_key, ++compressor->node_count);
-                first_step = 0;
-            }
+                    put(compressor -> dictionary, waiting_new_key, ++compressor->node_count);
+                    full_dictionary = !(node_count < dictionary_size);
+                }
+                update_dictionary = 0;
 
-            // FIXME Orribile condizione controllata ogni volta -> OTTIMIZZAR
-            if(first_global_step){
-                first_global_step = 0;
             }
 
             //Prepare key for lookup
             node_key->code = current_symbol;
             node_key->father = parent_node;
 
-
             // Dictionary lookup
             child_node = get(compressor->dictionary, node_key);
             if (child_node == NO_ENTRY_FOUND) {
-                // TODO <emettere codice parent_node>
-                waiting_new_key->father = parent_node;
-                first_step = 1;
+
+                //Parent node code emission
+                write_data(&parent_node,1,sizeof(parent_node),out_fp);
+
+                if(!full_dictionary){
+                    waiting_new_key->father = parent_node;
+                    update_dictionary = 1;
+                }
             }
             else {
                 parent_node = child_node;
@@ -81,7 +103,7 @@ void compress(const char * input_filename, const char * output_file_name, int di
  */
 void init_tree_with_first_children(struct compressor_data* compressor, int symbol_alphabet){
 
-    // FIXME Cosa ci si mette come primi figli? Tutti e 256 i codici o solo le lettere? SOTTO HO MESSO TUTTO
+    // Prepare all first children (256 Ascii Symbols)
     char child_symbol;
     struct table_key * node_key;
 
