@@ -1,3 +1,4 @@
+#include <math.h>       /* log */
 #ifndef STUDENT_LZ78_SYMBOL_IO_H
 #define STUDENT_LZ78_SYMBOL_IO_H
 // Classe che potremmo fondere in file_io

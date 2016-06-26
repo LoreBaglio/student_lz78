@@ -13,7 +13,7 @@ int read_code(){
 }
 
 int compute_bit_to_represent(int arg){
-    // TODO Logaritmo di arg arrotondato per eccesso
+    return ceil(log(arg));
 }
 
 int end_compressed_file(){
