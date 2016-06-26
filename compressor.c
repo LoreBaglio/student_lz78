@@ -1,7 +1,3 @@
-#include <stdlib.h>
-#include "compressor.h"
-#include "file_io.h"
-#include "hash_table.h"
 
 struct compressor_data {
     hash_table * dictionary;
@@ -27,11 +23,14 @@ void compress(const char * input_filename, const char * output_file_name, int di
     int update_dictionary;  // Used when it's necessary to create a new node on the dictionary
 
     compressor -> dictionary = create(dictionary_size);
-    compressor -> node_count = 1;
+    compressor -> node_count = 1;       //0 is the ROOT, 2^(BIT_PER_CODE) - 1 is EOF
+    // Dictionary is considered full when the next node to be created is 2^N - 1.
+    // That code is reserved for END_OF_FILE code
     compressor -> full_dictionary = 0;
 
+
     // Prepare all characters as first children of the root of the tree
-    init_tree_with_first_children(compressor,ASCII_ALPHABET);
+    init_tree_with_first_children(compressor, ASCII_ALPHABET, dictionary_size);
 
     file_pointer = get_file(input_filename,header,dictionary_size);
     out_fp = open_file(output_file_name,WRITE);
@@ -65,9 +64,8 @@ void compress(const char * input_filename, const char * output_file_name, int di
 
                 waiting_new_key -> code = current_symbol;
                 // Increment node_count and put as new child id
-                    put(compressor -> dictionary, waiting_new_key, ++compressor->node_count);
-                    full_dictionary = !(node_count < dictionary_size);
-                }
+                put(compressor -> dictionary, waiting_new_key, ++compressor->node_count);
+                full_dictionary = !(node_count < (dictionary_size - 1));
                 update_dictionary = 0;
 
             }
@@ -92,8 +90,9 @@ void compress(const char * input_filename, const char * output_file_name, int di
                 parent_node = child_node;
             }
 
-    }
+        }
 
+        end_compressed_file();
 
 }
 
@@ -101,7 +100,11 @@ void compress(const char * input_filename, const char * output_file_name, int di
  * This function prepares all the children of the root, corresponding to all symbols of the alphabet (costly to look along all the file to
  * find just the subset of symbols that appears)
  */
-void init_tree_with_first_children(struct compressor_data* compressor, int symbol_alphabet){
+void init_tree_with_first_children(struct compressor_data* compressor, int symbol_alphabet, int dictionary_size){
+
+    // Set encoding number of bits and eof code
+    params.bits_per_code = compute_bit_to_represent(dictionary_size);
+    params.eof_code = (1 << (params.bits_per_code)) - 1);       // FIXME Check this!
 
     // Prepare all first children (256 Ascii Symbols)
     char child_symbol;

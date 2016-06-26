@@ -1,4 +1,4 @@
-
+#include "encode.h"
 #include "decompressor.h"
 #include "file_io.h"
 
@@ -27,6 +27,10 @@ void decompress(const char * input_filename, const char * output_file_name, int 
 
 	input_file = open_file(input_filename, READ);
 	output_file = open_file(output_file_name, APPEND);
+
+	// Set encoding number of bits and eof code
+    params.bits_per_code = compute_bit_to_represent(dictionary_size);
+    params.eof_code = (1 << (params.bits_per_code)) - 1);   // FIXME Check this!
 
 	//TODO header è compresso? Ho supposto di no
 	//leggo header

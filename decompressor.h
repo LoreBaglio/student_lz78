@@ -19,6 +19,8 @@ struct decompressor_data{
 	int node_count;
 };
 
+extern struct encoding_parameters params;
+
 void decompress(const char * input_filename, const char * output_file_name, int dictionary_size);
 
 #endif //STUDENT_LZ78_DECOMPRESSOR_H
