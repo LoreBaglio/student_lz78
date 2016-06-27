@@ -102,6 +102,8 @@ void decompress_LZW(const char *input_filename, const char *output_file_name, in
 	char received_c;
 	int received_parent;
 	int index = 0;
+	int index_father;
+	int old_code;
 	uint8_t c = 0;
 	int j,i;
 	int len = 0;
@@ -149,10 +151,10 @@ void decompress_LZW(const char *input_filename, const char *output_file_name, in
 			break;
 		}
 
-		decompressor -> dictionary[decompressor -> node_count].parent = received_parent;
-
+		
 		//codice non ottimizzato ciclo due volte
-		index = decompressor -> dictionary[decompressor -> node_count].parent;
+		index_father = decompressor -> dictionary[received_parent].parent;
+		//TODO fare pila
 		len++;
 		while(index != 0){
 			i = index;
@@ -172,16 +174,17 @@ void decompress_LZW(const char *input_filename, const char *output_file_name, in
 		}
 
 		write_data((void*)output_string, 1, len, output_file);
+		index = ++decompressor -> node_count;
+		decompressor -> dictionary[index].c = output_string[0];
+		decompressor -> dictionary[index].parent = old_code;
+		old_code = received_parent;
 
 		len = 0;
 		free(output_string);
-		decompressor -> node_count++;
+		
 
-		if(decompressor -> node_count == dictionary_size){
-			fclose(input_file);
-			fclose(output_file);
-			printf("decompression finished\n");
-			break;
+		if(decompressor -> node_count == dictionary_size){//TODO
+			
 		}
 
 	}
