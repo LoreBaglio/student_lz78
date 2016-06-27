@@ -18,7 +18,7 @@ void decompress(const char * input_filename, const char * output_file_name, int 
 	struct file_header* head = (struct file_header*)malloc(sizeof(struct file_header));
 
 	decompressor -> node_count = 1;
-	decompressor -> dictionary = (struct elem*)malloc(dictionary_size);  //FIXME dimensione dell'array è dictionary_size?
+	decompressor -> dictionary = (struct elem*)malloc(dictionary_size*sizeof(struct elem));
 
 	//inizializzo il nodo radice
 	decompressor -> dictionary[0].c = '0';
@@ -79,10 +79,16 @@ void decompress(const char * input_filename, const char * output_file_name, int 
 		write_data((void*)output_string, 1, len, output_file);
 
 		len = 0;
+		free(output_string);
 		decompressor -> node_count++; 
 
-		free(output_string);
+		if(decompressor -> node_count == dictionary_size){
+			fclose(input_file);
+			fclose(output_file);
+			printf("decompression finished\n");
+			break;
+		}
 
 	}	
 }
-//TODO controllare quando la dimensione del dizionario è troppo piccola
+

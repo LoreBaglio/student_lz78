@@ -197,7 +197,8 @@ int read_header(struct file_header* head, const char* filename)
 	
 	size = sizeof(int32_t);
 	read_data((void*)&(head->checksum), 1, size, fp);
-	
+
+	fclose(fp);	
 	ret = (int)ftell(fp);
 	return ret;
 }
