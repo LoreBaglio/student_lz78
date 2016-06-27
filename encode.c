@@ -85,7 +85,7 @@ int write_code(struct bitio* b, u_int size, uint64_t data){
 /*TODO decidere valore di ritorno della read_code:
 ora il valore di ritorno indica i bit letti se è un valore positivo >=0 o un errore se <0
 */
-int read_code(struct bitio* b, u_int size, uint64_t* data, int* node_code){
+int read_code(struct bitio* b, u_int size, uint64_t* my_data){
     // TODO read bits_per_code number of bits and return the conversion in int. The result
     // is a node of the dictionary and will be used by the decompressor
 	int space;
@@ -97,14 +97,14 @@ int read_code(struct bitio* b, u_int size, uint64_t* data, int* node_code){
 	if(size == 0){
     	return 0;
     }
-	*data = 0;
+	*my_data = 0;
 	space = b->wp - b->rp;
 	if(size <= space){
-		*data = (b->data >> b->rp)&((1UL << size) - 1);
+		*my_data = (b->data >> b->rp)&((1UL << size) - 1);
 		b->rp += size;
 	}
 	else{
-		*data = (b->data >> b->rp);
+		*my_data = (b->data >> b->rp);
 		ret = fread((void*)&b->data, 8, 1, b->f);
 		if(ret < 0){
 			errno = ENODATA;
@@ -112,14 +112,14 @@ int read_code(struct bitio* b, u_int size, uint64_t* data, int* node_code){
 		}
 		b->wp = ret * 8;
 		if(b->wp >= size - space){
-			*data |= b->data << space;
-			*data &= (1UL << size) - 1;
+			*my_data |= b->data << space;
+			*my_data &= (1UL << size) - 1;
 			b->rp = size - space;
 			return size;
 		}
 		else{
-			*data |= b->data << space;
-			*data &= 1UL << (b->wp + space) - 1;
+			*my_data |= b->data << space;
+			*my_data &= 1UL << (b->wp + space) - 1;
 			b->rp = b->wp;
 			return b->wp + space;
 		}
@@ -127,7 +127,7 @@ int read_code(struct bitio* b, u_int size, uint64_t* data, int* node_code){
 }
 
 int compute_bit_to_represent(int arg){
-    return ceil(log(arg));
+    return (int) ceil(log(arg));
 }
 
 int end_compressed_file(){

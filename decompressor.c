@@ -1,6 +1,7 @@
 #include "encode.h"
 #include "decompressor.h"
 #include "file_io.h"
+#include "compressor.h"
 
 void decompress(const char * input_filename, const char * output_file_name, int dictionary_size)
 {
@@ -10,31 +11,37 @@ void decompress(const char * input_filename, const char * output_file_name, int 
 	char received_c;
 	int received_parent;
 	int index = 0;
-	int i = 0;
-	int j;
+	uint8_t c = 0;
+	int j,i;
 	int len = 0;
 	int offset;
 	struct decompressor_data * decompressor = malloc(sizeof(struct decompressor_data));
-	struct file_header* head = (struct file_header*)malloc(sizeof(struct file_header));
+	struct file_header* head = (struct file_header*) malloc(sizeof(struct file_header));
 
 	decompressor -> node_count = 1;
-	decompressor -> dictionary = (struct elem*)malloc(dictionary_size*sizeof(struct elem));
+	decompressor -> dictionary = (struct elem*) malloc(dictionary_size * sizeof(struct elem));
 
 	//inizializzo il nodo radice
 	decompressor -> dictionary[0].c = '0';
 	decompressor -> dictionary[0].parent = 0;
-	//FIXME inizializzare anche i 256 figli? Se si vol far quella ottimizzata yes :)
+
+	//Init array //FIXME Pensare al fatto che il primo elemento
+	for (c = ROOT + 1; c < EOF; c++) {
+		decompressor->dictionary[c].c = c;
+		decompressor->dictionary[c].parent = ROOT;
+		++decompressor->node_count;
+	}
 
 	input_file = open_file(input_filename, READ);
-	output_file = open_file(output_file_name, APPEND);
+	output_file = open_file(output_file_name, WRITE);
 
 	// Set encoding number of bits and eof code
     params.bits_per_code = compute_bit_to_represent(dictionary_size);
-    params.eof_code = (1 << (params.bits_per_code)) - 1);   // FIXME Check this!
 
 	//TODO header è compresso? Ho supposto di no
 	//leggo header
 	offset = read_header(head, input_filename);
+	// Porto
 	fseek(input_file, offset, SEEK_SET);
 
 	while(1){

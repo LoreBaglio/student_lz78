@@ -14,6 +14,16 @@
 #include <time.h>
 #include <stdint.h>
 
+/*
+ * The width of the CRC calculation and result.
+ * Modify the typedef for a 16 or 32-bit CRC standard.
+ */
+typedef uint32_t crc;
+
+#define WIDTH  (8 * sizeof(crc))
+#define TOPBIT (1 << (WIDTH - 1))
+#define POLYNOMIAL 0xD8  /* 11011 followed by 0's */
+
 
 struct file_header {
 
@@ -35,9 +45,10 @@ void compare_filenames(const char* input_name, const char* output_name);
 void read_data(void* dest, int n, int size, FILE* fp);
 void write_data(void* sr, int n, int size, FILE* fp);
 void insert_header(const char* filename, int dictionary_size);
-int read_header(struct file_header*, const char* filename);
-// http://stackoverflow.com/questions/21001659/crc32-algorithm-implementation-in-c-without-a-look-up-table-and-with-a-public-li
-//uint32_t crc32b(const char *);
+void insert_header_ottimizzato(const char* filename, int dictionary_size, FILE* fp);
+int read_header(FILE*, struct file_header*);
+crc crc32b(uint8_t const *, int);
+void step_crc(crc* , char);
 
 
 #endif //STUDENT_LZ78_FILE_IO_H

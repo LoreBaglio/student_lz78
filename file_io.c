@@ -32,27 +32,51 @@ void get_header(const char* filename, struct file_header* header,int dictionary_
     header->filename_len = strlen(filename) + 1;
     header->file_size = file_stat.st_size;
     header->last_modification_time = file_stat.st_atim.tv_sec;
-    header->checksum = 0;       //TODO Checksum
+    header->checksum = 0;       //Checksum will be set at the end of compression
 
 }
-/*
-uint32_t crc32b(const char* message) {
-    int i, j;
-    unsigned int byte, crc, mask;
 
-    i = 0;
-    crc = 0xFFFFFFFF;
-    while (message[i] != 0) {
-        byte = message[i];            // Get next byte.
-        crc = crc ^ byte;
-        for (j = 7; j >= 0; j--) {    // Do eight times.
-            mask = -(crc & 1);
-            crc = (crc >> 1) ^ (0xEDB88320 & mask);
+crc
+crc32b(uint8_t const message[], int nBytes)
+{
+    crc  remainder = 0;
+
+
+    /*
+     * Perform modulo-2 division, a byte at a time.
+     */
+    for (int byte = 0; byte < nBytes; ++byte)
+    {
+        /*
+         * Bring the next byte into the remainder.
+         */
+        remainder ^= (message[byte] << (WIDTH - 8));
+
+        /*
+         * Perform modulo-2 division, a bit at a time.
+         */
+        for (uint8_t bit = 8; bit > 0; --bit)
+        {
+            /*
+             * Try to divide the current data bit.
+             */
+            if (remainder & TOPBIT)
+            {
+                remainder = (remainder << 1) ^ POLYNOMIAL;
+            }
+            else
+            {
+                remainder = (remainder << 1);
+            }
         }
-        i = i + 1;
     }
-    return ~crc;
-}*/
+
+    /*
+     * The final remainder is the CRC result.
+     */
+    return (remainder);
+
+}   /* crcSlow() */
 
 //funzione che controlla che il file di input sia diverso da quello di output per non sovrascrivere
 void compare_filenames(const char* input_name, const char* output_name)
@@ -134,10 +158,6 @@ void insert_header(const char* filename, int dictionary_size)
 	size = sizeof(int8_t);
 	write_data((void*)&(head->compression_algorithm_code), 1, size, fp);
 
-	fclose(fp);
-
-	fp = open_file(filename, APPEND);
-
 	size = sizeof(int32_t);
 	write_data((void*)&(head->dictionary_size), 1, size, fp);
 
@@ -165,14 +185,12 @@ void insert_header(const char* filename, int dictionary_size)
 	fclose(fp);
 }
 
-int read_header(struct file_header* head, const char* filename)
+int read_header(FILE* fp, struct file_header* head)
 {
-	FILE* fp;
+
 	int size;
 	int ret;
-	
-	fp = open_file(filename, READ);
-	
+
 	size = sizeof(int8_t);
 	read_data((void*)&(head->compression_algorithm_code), 1, size, fp);
 
@@ -198,8 +216,73 @@ int read_header(struct file_header* head, const char* filename)
 	size = sizeof(int32_t);
 	read_data((void*)&(head->checksum), 1, size, fp);
 
-	fclose(fp);	
 	ret = (int)ftell(fp);
 	return ret;
 }
+
+void step_crc(crc* remainder, char c) {
+
+    /*
+         * Bring the next byte into the remainder.
+         */
+    *remainder ^= (c << (WIDTH - 8));
+
+    /*
+     * Perform modulo-2 division, a bit at a time.
+     */
+    for (uint8_t bit = 8; bit > 0; --bit)
+    {
+        /*
+         * Try to divide the current data bit.
+         */
+        if (*remainder & TOPBIT)
+        {
+            *remainder = (*remainder << 1) ^ POLYNOMIAL;
+        }
+        else
+        {
+            *remainder = (*remainder << 1);
+        }
+    }
+
+}
+
+void insert_header_ottimizzato(const char *filename, int dictionary_size, FILE *fp) {
+
+    struct file_header* head;
+
+    int size = 0;
+
+    head = (struct file_header*)malloc(sizeof(struct file_header));
+    get_header(filename, head, dictionary_size);
+
+    size = sizeof(int8_t);
+    write_data((void*)&(head->compression_algorithm_code), 1, size, fp);
+
+    size = sizeof(int32_t);
+    write_data((void*)&(head->dictionary_size), 1, size, fp);
+
+    size = sizeof(int32_t);
+    write_data((void*)&(head->symbol_size), 1, size, fp);
+
+    size = sizeof(int32_t);
+    write_data((void*)&(head->filename_len), 1, size, fp);
+
+    size = head->filename_len;
+    write_data((void*)(head->filename), 1, size, fp);
+
+    size = sizeof(off_t);
+    write_data((void*)&(head->file_size), 1, size, fp);
+
+    size = sizeof(time_t);
+    write_data((void*)&(head->last_modification_time), 1, size, fp);
+
+    size = sizeof(int32_t);
+    write_data((void*)&(head->checksum), 1, size, fp);
+
+}
+
+
+
+
 

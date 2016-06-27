@@ -34,6 +34,7 @@ struct hash_table* create(int size);
 int get(struct hash_table*, struct table_key*);
 int put(struct hash_table*, struct table_key*, int );
 void print_table(struct hash_table*);
+void destroy(struct hash_table*);       //TODO
 
 // Utilities
 int compare_key(struct table_key*, struct table_key*);
