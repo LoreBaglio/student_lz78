@@ -185,7 +185,7 @@ void insert_header(const char* filename, int dictionary_size)
 	fclose(fp);
 }
 
-int read_header(FILE* fp, struct file_header* head)
+void read_header(FILE* fp, struct file_header* head)
 {
 
 	int size;
@@ -215,9 +215,6 @@ int read_header(FILE* fp, struct file_header* head)
 	
 	size = sizeof(int32_t);
 	read_data((void*)&(head->checksum), 1, size, fp);
-
-	ret = (int)ftell(fp);
-	return ret;
 }
 
 void step_crc(crc* remainder, char c) {
