@@ -21,6 +21,7 @@ struct decompressor_data{
 
 extern struct encoding_parameters params;
 
-void decompress(const char * input_filename, const char * output_file_name, int dictionary_size);
+void decompress_LZ78(const char *input_filename, const char *output_file_name, int dictionary_size);
+void decompress_LZW(const char * input_filename, const char * output_file_name, int dictionary_size);
 
 #endif //STUDENT_LZ78_DECOMPRESSOR_H
