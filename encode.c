@@ -85,7 +85,7 @@ int write_code(struct bitio* b, u_int size, uint64_t data){
 /*TODO decidere valore di ritorno della read_code:
 ora il valore di ritorno indica i bit letti se è un valore positivo >=0 o un errore se <0
 */
-int read_code(struct bitio* b, u_int size, uint64_t* data){
+int read_code(struct bitio* b, u_int size, uint64_t* data, int* node_code){
     // TODO read bits_per_code number of bits and return the conversion in int. The result
     // is a node of the dictionary and will be used by the decompressor
 	int space;
@@ -94,11 +94,11 @@ int read_code(struct bitio* b, u_int size, uint64_t* data){
 		errno = EINVAL;
 		return -1;
 	}
+	if(size == 0){
+    	return 0;
+    }
 	*data = 0;
 	space = b->wp - b->rp;
-	if(size == 0){
-		return 0;
-	}
 	if(size <= space){
 		*data = (b->data >> b->rp)&((1UL << size) - 1);
 		b->rp += size;
