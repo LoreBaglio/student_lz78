@@ -32,7 +32,7 @@ void compress(const char * input_filename, const char * output_file_name, int di
     // Prepare all characters as first children of the root of the tree
     init_tree_with_first_children(compressor, ASCII_ALPHABET, dictionary_size);
 
-    file_pointer = get_file(input_filename,header,dictionary_size);
+    file_pointer = open_file(input_filename,READ);
     out_fp = open_file(output_file_name,WRITE);
     node_key = malloc(sizeof(table_key));
     waiting_new_key = malloc(sizeof(table_key));    // This is for new node to be created
