@@ -98,12 +98,11 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     header_size = crc_header_offset + sizeof(int32_t);
 
     is_compressed = check_size(bitio->f, head->file_size, header_size);
-    // posizione su bit is compressed
 
     if(is_compressed){
 
         // FIXME TEST THIS!
-
+        // posizione su bit is compressed
         fseek(bitio->f, header_size, SEEK_SET);
 
         // Leggo 64 bit
