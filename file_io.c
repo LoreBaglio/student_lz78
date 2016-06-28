@@ -244,10 +244,10 @@ void step_crc(crc* remainder, char c) {
 
 }
 
-void insert_header_ottimizzato(const char *filename, int dictionary_size, FILE *fp) {
+int insert_header_ottimizzato(const char *filename, int dictionary_size, FILE *fp) {
 
     struct file_header* head;
-
+    int crc_offset = 0;
     int size = 0;
 
     head = (struct file_header*)malloc(sizeof(struct file_header));
@@ -255,27 +255,37 @@ void insert_header_ottimizzato(const char *filename, int dictionary_size, FILE *
 
     size = sizeof(int8_t);
     write_data((void*)&(head->compression_algorithm_code), 1, size, fp);
+    crc_offset += size;
 
     size = sizeof(int32_t);
     write_data((void*)&(head->dictionary_size), 1, size, fp);
+    crc_offset += size;
 
     size = sizeof(int32_t);
     write_data((void*)&(head->symbol_size), 1, size, fp);
+    crc_offset += size;
 
     size = sizeof(int32_t);
     write_data((void*)&(head->filename_len), 1, size, fp);
+    crc_offset += size;
 
     size = head->filename_len;
     write_data((void*)(head->filename), 1, size, fp);
+    crc_offset += size;
 
     size = sizeof(off_t);
     write_data((void*)&(head->file_size), 1, size, fp);
+    crc_offset += size;
 
     size = sizeof(time_t);
     write_data((void*)&(head->last_modification_time), 1, size, fp);
+    crc_offset += size;
 
+    // CRC
     size = sizeof(int32_t);
     write_data((void*)&(head->checksum), 1, size, fp);
+
+    return crc_offset;
 
 }
 

@@ -45,7 +45,7 @@ void compare_filenames(const char* input_name, const char* output_name);
 void read_data(void* dest, int n, int size, FILE* fp);
 void write_data(void* sr, int n, int size, FILE* fp);
 void insert_header(const char* filename, int dictionary_size);
-void insert_header_ottimizzato(const char* filename, int dictionary_size, FILE* fp);
+int insert_header_ottimizzato(const char* filename, int dictionary_size, FILE* fp);
 void read_header(FILE*, struct file_header*);
 crc crc32b(uint8_t const *, int);
 void step_crc(crc* , char);
