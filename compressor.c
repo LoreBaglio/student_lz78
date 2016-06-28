@@ -117,7 +117,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
     }
 
-    //Attach CRC here or after? // FIXME Gestire doppio CRC, compresso/non compresso
+    //Attach CRC here or after?
 
     //end_compressed_file();
     bitio_close(bitio);
