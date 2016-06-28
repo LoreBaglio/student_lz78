@@ -1,25 +1,15 @@
 CC=gcc
-CFLAGS = -c
+SOURCES = lzw_codec.c compressor.c decompressor.c hash_table.c file_io.c encode.c 
+OBJECTS = $(SOURCES:.c=.o)
+LIBS =  -lm
 
-all: compressor decompressor lz_command
+all: lzw_codec
 
-lz_command: lz_command.o
-	$(CC) -o lz_command lz_command.o
+lzw_codec: $(OBJECTS) 
+	$(CC) -o $@ $(OBJECTS) $(LIBS)
 
-lz_command.o: lz_command.c
-	$(CC) $(CFLAGS) lz_command.c
-
-compressor: compressor.o
-	$(CC) -o compressor compressor.o
-
-compressor.o: compressor.c
-	$(CC) $(CFLAGS) compressor.c
-
-decompressor: decompressor.o
-	$(CC) -o decompressor decompressor.o
-
-decompressor.o: decompressor.c
-	$(CC) $(CFLAGS) decompressor.c
+.c.o:
+	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm *.o compressor decompressor lz_command
+	rm lzw_codec $(objects)

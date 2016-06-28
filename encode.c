@@ -1,3 +1,4 @@
+
 #include "encode.h"
 
 //TODO controllare gestione errori
