@@ -2,6 +2,7 @@ CC=gcc
 SOURCES = lzw_codec.c compressor.c decompressor.c hash_table.c file_io.c encode.c 
 OBJECTS = $(SOURCES:.c=.o)
 LIBS =  -lm
+CFLAGS = -g
 
 all: lzw_codec
 
