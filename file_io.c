@@ -83,7 +83,7 @@ void compare_filenames(const char* input_name, const char* output_name)
 	int ret = strcmp(input_name, output_name);
 
 	if(ret == 0){
-		printf("error in specifing parameters\n");
+		printf("error in specifing file names: input file must be distinct from output file\n");
 		exit(0);
 	}
 }
