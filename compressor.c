@@ -38,7 +38,7 @@ void compress(const char * input_filename, const char * output_file_name, int di
     out_fp = open_file(output_file_name,WRITE);
     node_key = malloc(sizeof(struct table_key));
 
-    crc_header_offset = insert_header_ottimizzato(input_filename, dictionary_size, out_fp);
+    crc_header_offset = insert_header(input_filename, dictionary_size, out_fp);
 
     //Init bitio
     bitio = bitio_open(out_fp,WRITE);
@@ -84,13 +84,15 @@ void compress(const char * input_filename, const char * output_file_name, int di
 
     }
 
+    //Attach CRC
+    fseek(out_fp, crc_header_offset, SEEK_SET);
+    fwrite(&remainder,sizeof(crc),1,out_fp);
+
     //end_compressed_file();
     fclose(out_fp);
     fclose(in_fp);
 
-    //Attach CRC
-    fseek(out_fp, crc_header_offset, SEEK_SET);
-    fwrite(&remainder,sizeof(crc),1,out_fp);
+  
 }
 
 /**
