@@ -69,12 +69,12 @@ int main (int argc, char **argv)
       case '?':
         if (optopt == 'i' || optopt == 'o' || optopt == 'l' )
           fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+
         else if (isprint (optopt))
           fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+
         else
-          fprintf(stderr,
-                  "Unknown option character `\\x%x'.\n",
-                  optopt);
+          fprintf(stderr,"Unknown option character `\\x%x'.\n", optopt);
             return 1;
 
       default:
@@ -98,14 +98,19 @@ int main (int argc, char **argv)
     if (verbose_flag)
       printf("Compression phase ----\n");
 
-    if (input_flag){
+    if (input_flag && output_flag){
+
+      compare_filenames(input_value, output_value);
 
       if(length_flag){
 
-        dictionary_size = atoi(length_value);
+      	dictionary_size = atoi(length_value);
         // FIXME Potremmo aggiungere lettura della sequenza "64K"?
-        if(dictionary_size < MIN_DICTIONARY_SIZE || dictionary_size > MAX_DICTIONARY_SIZE){
-          dictionary_size = DEFAULT_DICTIONARY_SIZE;
+          if(dictionary_size < MIN_DICTIONARY_SIZE || dictionary_size > MAX_DICTIONARY_SIZE){
+            dictionary_size = DEFAULT_DICTIONARY_SIZE;
+
+	    if (verbose_flag)
+	      printf("The specified dictionary size is not valid. Default dictionary size will be used.\n");
         }
       }
 
@@ -113,15 +118,24 @@ int main (int argc, char **argv)
         dictionary_size = DEFAULT_DICTIONARY_SIZE;
 
       if (verbose_flag)
-        printf("Dictionary size: %d",dictionary_size);
+        printf("Dictionary size: %d\n",dictionary_size);
+
 
       // Chiamata al compressore
-      compress(input_value,output_value,dictionary_size);
+      compress(input_value, output_value, dictionary_size);
 
     } else {
-      printf("Input file missing\nSpecify the input file with -i option, followed by name:\n"
-                     "-i <filename>\n");
-      exit(1);
+
+      if(!input_flag){
+
+        printf("Input file missing\nSpecify the input file with -i option, followed by name:\n -i <filename>\n");
+        exit(1);
+      }
+      else{
+
+        printf("Output file missing\nSpecify the output file with -o option, followed by name:\n -o <filename>\n");
+        exit(1);
+      }
     }
 
   } else if (decompressor_flag){
@@ -129,20 +143,37 @@ int main (int argc, char **argv)
     if (verbose_flag)
       printf("Decompression phase ----\n");
 
-    if (input_flag){
-    // FIXME Ignoriamo il dictionary size in decompressione? tanto è scritto nell'header
-      decompress_LZW(input_value,output_value);
-    } else {
-      printf("Input file missing\nSpecify the input file with -i option, followed by name:\n"
-                     "-i <filename>\n");
-      exit(1);
+    if (input_flag && output_flag){
 
+      compare_filenames(input_value, output_value);
+
+      if(length_flag){
+
+        if(verbose_flag)
+
+	  printf("You cannot specify the dictionary size during the decompression phase: it will be ignored.\n");
+      }
+
+    // FIXME Ignoriamo il dictionary size in decompressione? tanto è scritto nell'header
+    decompress_LZW(input_value, output_value);
+
+    } else {
+
+        if(!input_flag){
+
+          printf("Input file missing\nSpecify the input file with -i option, followed by name:\n -i <filename>\n");
+          exit(1);
+        }
+        else{
+
+          printf("Output file missing\nSpecify the output file with -o option, followed by name:\n -o <filename>\n");
+          exit(1);
+        }
     }
 
   } else {
 
-    printf("The correct format is:\n./lz_command -c(-d) -i <inputfile> -o <outputfile>\n"
-                   "Optional flags are: \n-l (dictionary size)\n-v (for verbose mode)\n");
+    printf("The correct format is:\n./lz_command -c(-d) -i <inputfile> -o <outputfile>\n Optional flags are: \n-l (dictionary size)\n-v (for verbose mode)\n");
   }
 
   return 0;

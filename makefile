@@ -12,4 +12,4 @@ lzw_codec: $(OBJECTS)
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm lzw_codec $(objects)
+	rm lzw_codec $(OBJECTS)

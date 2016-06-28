@@ -14,7 +14,7 @@
 #define ROOT 0
 #define ASCII_ALPHABET 1     // Assumption for the project: symbols are characters
 
-int bits_per_code; // Viene settata dal compressor in quanto è dichiarata extern in compressor.h
+u_int bits_per_code; // Viene settata dal compressor in quanto è dichiarata extern in compressor.h
 int size_block_bitio;
 
 struct bitio{
@@ -29,7 +29,7 @@ int read_code(struct bitio*,int size, uint64_t* result);
 int write_code(struct bitio*, int size, uint64_t data);
 struct bitio* bitio_open(const char* filename, u_int mode);
 int bitio_close(struct bitio*);
-int compute_bit_to_represent(int);
+u_int compute_bit_to_represent(int);
 int end_compressed_file();
 
 #endif //STUDENT_LZ78_SYMBOL_IO_H
