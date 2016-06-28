@@ -3,27 +3,28 @@
 //TODO controllare gestione errori
 //TODO controllare le fread e fwrite
 
-struct bitio{
-	FILE* f;
-	uint64_t data;
-	u_int wp;
-	u_int rp;
-	u_int mode;
-};
 
-struct bitio* bitio_open(FILE* f, u_int mode)
+struct bitio* bitio_open(const char* filename, u_int mode)
 {
 	struct bitio* b;
-	if(f == NULL || mode > 1){
+	if(filename == NULL || filename[0] == '\0' || mode > 1){
 		errno = EINVAL;
 		return NULL;
 	}
+
 	b = calloc(1, sizeof(struct bitio));
 	if(b == NULL){
 		errno = ENOMEM;
 		return NULL;
 	}
-	b->f = f;
+
+	b->f = fopen(filename, (mode == 0) ? "r" : "w");
+
+	if (b->f == NULL){
+		free(b);
+		return NULL;
+	}
+
 	b->mode = mode;
 
 	return b;

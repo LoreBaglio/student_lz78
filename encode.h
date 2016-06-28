@@ -16,7 +16,14 @@
 
 int bits_per_code; // Viene settata dal compressor in quanto è dichiarata extern in compressor.h
 
-struct bitio;
+struct bitio{
+    FILE* f;
+    uint64_t data;
+    u_int wp;
+    u_int rp;
+    u_int mode;
+};
+
 int read_code(struct bitio*, uint64_t* result);
 int write_code(struct bitio*, uint64_t data);
 struct bitio* bitio_open(const char* filename, u_int mode);

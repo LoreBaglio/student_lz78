@@ -8,7 +8,10 @@
 #endif //STUDENT_LZ78_HASH_TABLE_H
 
 #define NO_ENTRY_FOUND -1
+#define FULL_DICTIONARY -2
+
 #include <stdio.h>
+#include <stdint.h>
 
 
 struct table_key{
@@ -24,6 +27,8 @@ struct entry_table{
 
 struct hash_table{
     int size;
+    int effective_size;
+    int entry_counter;
     struct entry_table** table;
 };
 
@@ -34,9 +39,10 @@ struct hash_table* create(int size);
 int get(struct hash_table*, struct table_key*);
 int put(struct hash_table*, struct table_key*, int );
 void print_table(struct hash_table*);
-void destroy(struct hash_table*);       //TODO
+void destroy(struct hash_table *);
 
 // Utilities
 int compare_key(struct table_key*, struct table_key*);
 struct entry_table* lookup(struct hash_table*, struct table_key*);
 int count_digits(int);
+int table_is_full(struct hash_table *table);

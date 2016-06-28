@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <stdbool.h>
 #include "hash_table.h"
 
 /**
@@ -37,6 +38,7 @@ int main(){
 }
  */
 
+
 int get(struct hash_table* hashtable, struct table_key* key) {
 
     struct entry_table* entry = lookup(hashtable, key);
@@ -49,6 +51,9 @@ int get(struct hash_table* hashtable, struct table_key* key) {
 
 int put(struct hash_table* hashtable, struct table_key* key, int value) {
 
+    if (table_is_full(hashtable))
+        return FULL_DICTIONARY;
+
     int hash_index = hash(key, hashtable->size);
     struct entry_table* bin = hashtable->table[hash_index];
     struct entry_table* last = NULL;
@@ -58,14 +63,11 @@ int put(struct hash_table* hashtable, struct table_key* key, int value) {
     // No element with this key
     if (entry == NULL){
 
-        entry = malloc(sizeof(struct entry_table));
-
-
-
+        entry = calloc(1, sizeof(struct entry_table));
 
         // Primo inserimento
         if (bin == NULL){
-            bin = malloc(sizeof(struct entry_table));
+            bin = calloc(1, sizeof(struct entry_table));
 
             bin->key = calloc(1, sizeof(struct table_key));
             bin->key->father = key->father;
@@ -88,12 +90,18 @@ int put(struct hash_table* hashtable, struct table_key* key, int value) {
             entry->next = last;
         }
 
+        hashtable->entry_counter++;
+
     } else {
         // Update value
         entry->value = value;
     }
 
     return value;
+}
+
+int table_is_full(struct hash_table *table) {
+    return table->effective_size == table->entry_counter;
 }
 
 int compare_key(struct table_key * first, struct table_key * second) {
@@ -126,17 +134,22 @@ struct entry_table* lookup(struct hash_table * hashtable, struct table_key * key
 void print_table(struct hash_table * hash_table) {
 
     int i;
-    for (i = 0; i < hash_table->size; i++){
+    for (i = 0; i < hash_table->size; i++) {
 
         struct entry_table *entry = hash_table->table[i];
 
         if (entry == NULL)
             continue;
 
-        struct table_key *key = entry->key;
+        while (entry) {
 
-        int value = entry->value;
-        printf("%d) Key: %d-%c, Value: %d\n", i, key->father, key->code, value);
+            struct table_key *key = entry->key;
+
+            int value = entry->value;
+            printf("%d) Key: %d-%c, Value: %d\n", i, key->father, key->code, value);
+            entry = entry->next;
+
+        }
     }
 
 }
@@ -175,10 +188,12 @@ int count_digits(int n) {
     return count;
 }
 
+int select_hash_size(int size);
+
 struct hash_table *create(int size) {
 
     struct hash_table* hash_table = NULL;
-    int i;
+    int i, array_size;
 
     hash_table = calloc(1, sizeof(struct hash_table));
     if (hash_table == NULL){
@@ -186,18 +201,64 @@ struct hash_table *create(int size) {
         return NULL;
     }
 
-    hash_table->table = calloc(1 , sizeof(struct entry_table* ) * size);
+    // Average number of collision
+    array_size = select_hash_size(size);
+    hash_table->table = calloc(1 , sizeof(struct entry_table* ) * array_size);
 
     if (hash_table->table == NULL){
         printf("Failed to allocate memory\n");
         return NULL;
     }
 
-    hash_table->size = size;
+    hash_table->size = array_size;
+    hash_table->effective_size = size;
+    hash_table->entry_counter = 0;
 
     for (i = 0; i < size; i++)
         hash_table->table[i] = NULL;
 
     return hash_table;
 }
+
+int select_hash_size(int size) {
+    int ret = size/3;
+
+    if (ret == 0)
+        ret = size;
+
+    return ret;
+}
+
+void destroy(struct hash_table *hash_table) {
+
+    int i = 0;
+    struct entry_table *next_entry;
+
+    for (i = 0; i < hash_table->size; i++) {
+
+        struct entry_table *entry = hash_table->table[i];
+
+        if (entry == NULL)
+            continue;
+
+        while (entry) {
+
+            next_entry = entry->next;
+            free(entry->key);
+            free(entry);
+            entry = next_entry;
+
+        }
+
+    }
+
+    free(hash_table);
+
+}
+
+
+
+
+
+
 
