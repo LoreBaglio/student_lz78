@@ -19,9 +19,9 @@ struct decompressor_data{
 	int node_count;
 };
 
-extern struct encoding_parameters params;
+extern int bits_per_code;
 
 void decompress_LZ78(const char *input_filename, const char *output_file_name, int dictionary_size);
-void decompress_LZW(const char * input_filename, const char * output_file_name, int dictionary_size);
+void decompress_LZW(const char * input_filename, const char * output_file_name);
 
 #endif //STUDENT_LZ78_DECOMPRESSOR_H

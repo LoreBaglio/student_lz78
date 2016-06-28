@@ -11,7 +11,7 @@
 #define ROOT 0
 
 struct compressor_data;
-extern struct encoding_parameters params;
+extern int bits_per_code;
 
 void compress(const char*,const char*,int);
 void init_tree_with_first_children(struct compressor_data*, int, int);

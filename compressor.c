@@ -16,8 +16,7 @@ void compress(const char * input_filename, const char * output_file_name, int di
     struct file_header* header = malloc(sizeof(struct file_header));
 
     // Variables for each step of lookup
-    int parent_node = ROOT;       //FIXME Assicurarsi che il dizionario sia massimo 2^16 entry (64KB)
-    //FIXME parent node su 8 bit se il dizionario è a 256 entry -> usare bitio?? per scrivere parent node a 7 bit se 128 entry, 9 bit se 512 etc??
+    int parent_node = ROOT;
     char current_symbol;
     struct table_key * node_key;
     int child_node = 0;
@@ -97,7 +96,7 @@ void compress(const char * input_filename, const char * output_file_name, int di
 void init_tree_with_first_children(struct compressor_data* compressor, int symbol_alphabet, int dictionary_size){
 
     // Set encoding number of bits and eof code
-    params.bits_per_code = compute_bit_to_represent(dictionary_size);
+    bits_per_code = compute_bit_to_represent(dictionary_size);
 
     // Prepare all first children (256 Ascii Symbols)
     char child_symbol;

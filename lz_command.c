@@ -5,10 +5,10 @@
 #include "compressor.h"
 
 #define DEFAULT_DICTIONARY_SIZE 4096
-// TODO scegliere size di default
+#define MIN_DICTIONARY_SIZE 256
+#define MAX_DICTIONARY_SIZE 65536
 
 // Global variables
-
 int verbose_flag = 0;
 
 // Support functions
@@ -102,7 +102,8 @@ int main (int argc, char **argv)
       if(length_flag){
 
         dictionary_size = atoi(length_value);
-        if(dictionary_size <= 0){
+        // FIXME Potremmo aggiungere lettura della sequenza "64K"?
+        if(dictionary_size < MIN_DICTIONARY_SIZE || dictionary_size > MAX_DICTIONARY_SIZE){
           dictionary_size = DEFAULT_DICTIONARY_SIZE;
         }
       }
@@ -128,7 +129,8 @@ int main (int argc, char **argv)
       printf("Decompression phase ----\n");
 
     if (input_flag){
-      //TODO Chiamata decompressore
+    // FIXME Ignoriamo il dictionary size in decompressione? tanto è scritto nell'header
+      decompress_LZW(input_value,output_value);
     } else {
       printf("Input file missing\nSpecify the input file with -i option, followed by name:\n"
                      "-i <filename>\n");

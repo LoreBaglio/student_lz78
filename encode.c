@@ -11,10 +11,10 @@ struct bitio{
 	u_int mode;
 };
 
-struct bitio* bitio_open(const char* filename, u_int mode)
+struct bitio* bitio_open(FILE* f, u_int mode)
 {
 	struct bitio* b;
-	if(filename == NULL || filename[0] == '\0' || mode > 1){
+	if(f == NULL || mode > 1){
 		errno = EINVAL;
 		return NULL;
 	}
@@ -23,13 +23,9 @@ struct bitio* bitio_open(const char* filename, u_int mode)
 		errno = ENOMEM;
 		return NULL;
 	}
-	b->f = fopen(filename, (mode == 0)?"r":"a"); //FIXME write, append or something else?
-	if(b->f == NULL){
-		errno = ENOENT;
-		free(b);
-		return NULL;
-	}
+	b->f = f;
 	b->mode = mode;
+
 	return b;
 }
 
@@ -51,23 +47,20 @@ int bitio_close(struct bitio* b)
 	return ret;
 }
 
-int write_code(struct bitio* b, u_int size, uint64_t data){
+int write_code(struct bitio* b, uint64_t data){
     // <azzera uint64>
     // <scrivi e shifta puntatore>
     // <se sfora, scrivere un pezzo e scrivere il resto nel prossimo uint_64>
 	int space;
-	if(b == NULL || b->mode != 1 || size > 64){
+	if(b == NULL || b->mode != 1){
 		errno = EINVAL;
 		return -1;
 	}
-	if(size == 0){
-		return 0;
-	}
 	space = 64 - b->wp;
-	data &= (1UL << size) - 1;
-	if(size <= space){
+	data &= (1UL << bits_per_code) - 1;
+	if(bits_per_code <= space){
 		b->data |= data << b->wp;
-		b->wp += size;
+		b->wp += bits_per_code;
 	}
 	else{
 		b->data |= data << b->wp;
@@ -76,7 +69,7 @@ int write_code(struct bitio* b, u_int size, uint64_t data){
 			return -1;
 		}
 		b->data = data >> space;
-		b->wp = size - space;
+		b->wp = bits_per_code - space;
 	}
 	return 0;
 
@@ -85,23 +78,20 @@ int write_code(struct bitio* b, u_int size, uint64_t data){
 /*TODO decidere valore di ritorno della read_code:
 ora il valore di ritorno indica i bit letti se è un valore positivo >=0 o un errore se <0
 */
-int read_code(struct bitio* b, u_int size, uint64_t* my_data){
+int read_code(struct bitio* b, uint64_t* my_data){
     // TODO read bits_per_code number of bits and return the conversion in int. The result
     // is a node of the dictionary and will be used by the decompressor
 	int space;
 	int ret;
-	if(b == NULL || b->mode != 0 || size > 64){
+	if(b == NULL || b->mode != 0){
 		errno = EINVAL;
 		return -1;
 	}
-	if(size == 0){
-    	return 0;
-    }
 	*my_data = 0;
 	space = b->wp - b->rp;
-	if(size <= space){
-		*my_data = (b->data >> b->rp)&((1UL << size) - 1);
-		b->rp += size;
+	if(bits_per_code <= space){
+		*my_data = (b->data >> b->rp)&((1UL << bits_per_code) - 1);
+		b->rp += bits_per_code;
 	}
 	else{
 		*my_data = (b->data >> b->rp);
@@ -111,11 +101,11 @@ int read_code(struct bitio* b, u_int size, uint64_t* my_data){
 			return -1;
 		}
 		b->wp = ret * 8;
-		if(b->wp >= size - space){
+		if(b->wp >= bits_per_code - space){
 			*my_data |= b->data << space;
-			*my_data &= (1UL << size) - 1;
-			b->rp = size - space;
-			return size;
+			*my_data &= (1UL << bits_per_code) - 1;
+			b->rp = bits_per_code - space;
+			return bits_per_code;
 		}
 		else{
 			*my_data |= b->data << space;
