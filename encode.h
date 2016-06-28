@@ -1,10 +1,10 @@
-#include <math.h>       /* log */
-#include<unistd.h>
-#include<stdlib.h>
-#include<stdint.h>
-#include<errno.h>
-#include<stdio.h>
-#include<strings.h>
+#include <math.h>      /* log */
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <errno.h>
+#include <stdio.h>
+#include <strings.h>
 
 #ifndef STUDENT_LZ78_SYMBOL_IO_H
 #define STUDENT_LZ78_SYMBOL_IO_H
