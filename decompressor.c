@@ -209,22 +209,28 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 
 		index = current_node;
 
-        // Ad ogni ciclo controllo che il parent non sia zero
-        // In tal caso push sulla pila
+        //Check if it's not a sequence, but a single char
+        if(index < EOF)
+            extracted_parent = decompressor->dictionary[index].c;
 
-		len = 0;
-		while(decompressor->dictionary[index].parent != 0){
-            stack_push(s, decompressor->dictionary[index].c);
-			index = decompressor -> dictionary[index].parent;
-            len++;
-		}
+        else {
+            // Ad ogni ciclo controllo che il parent non sia zero
+            // In tal caso push sulla pila
 
-        extracted_parent = stack_pop(s);
+            len = 0;
+            while(decompressor->dictionary[index].parent != 0){
+                stack_push(s, decompressor->dictionary[index].c);
+                index = decompressor -> dictionary[index].parent;
+                len++;
+            }
 
-        // Defensive programming
-        if (extracted_parent == EMPTY_STACK){
-            printf("Error during decompression: stack is empty and it shouldn't..\n");
-            exit(1);
+            extracted_parent = stack_pop(s);
+
+            // Defensive programming
+            if (extracted_parent == EMPTY_STACK){
+                printf("Error during decompression: stack is empty and it shouldn't..\n");
+                exit(1);
+            }
         }
 
         write_data(&extracted_parent, 1, 1, output_file);
