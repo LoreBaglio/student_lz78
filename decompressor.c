@@ -9,6 +9,7 @@ void decompressor_init(struct decompressor_data *decompressor, int dictionary_si
     char c = 0;
     uint16_t k;
 
+    // Start to count new nodes from EOF (excluded) (0 root, 1-256 first children, 257 EOF)
     decompressor -> node_count = EOF;
 
     decompressor->dictionary = (struct elem *) calloc(1, dictionary_size * sizeof(struct elem));
@@ -153,8 +154,18 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 	int i;
 	int len = 0;
     int new_node_count;
+    int32_t dictionary_size;
+    struct bitio* bitio;
 	struct decompressor_data * decompressor = calloc(1, sizeof(struct decompressor_data));
 	struct file_header* header = calloc(1, sizeof(struct file_header));
+
+    input_file = open_file(input_filename, READ);
+   	output_file = open_file(output_file_name, WRITE);
+
+   	read_header(input_file, header);
+
+   	// Get the dictionary size from the header of the compressed file
+    dictionary_size = head -> dictionary_size;
 
     //inizializzo la pila per la decompressione
     struct stack* s = calloc(1, sizeof(struct stack));
@@ -162,13 +173,8 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 
     decompressor_init(decompressor, dictionary_size);
 
-	input_file = open_file(input_filename, READ);
-	output_file = open_file(output_file_name, WRITE);
-
 	// Set encoding number of bits and eof code
 	params.bits_per_code = compute_bit_to_represent(dictionary_size);
-
-	read_header(input_file, header);
 
 	while(1){
 
