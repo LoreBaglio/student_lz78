@@ -66,10 +66,10 @@ int write_code(struct bitio* b, uint64_t data){
 	}
 	else{
 		b->data |= data << b->wp;
-		if(fwrite((void*)&b->data, 1, 8, b->f) != 1){
+		/*if(fwrite((void*)&b->data, 1, 8, b->f) != 1){
 			errno = ENOSPC;
 			return -1;
-		}
+		}*/
 		b->data = data >> space;
 		b->wp = bits_per_code - space;
 	}

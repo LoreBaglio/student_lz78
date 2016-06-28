@@ -12,7 +12,7 @@
 
 struct elem{
 	
-	char c;  
+	unsigned char c;
 	uint64_t parent;
 	//child id è la sua posizione nell'array
 };
