@@ -32,7 +32,7 @@ struct stack
 };
 
 
-extern struct encoding_parameters params;
+extern u_int bits_per_code;
 
 void decompressor_init(struct decompressor_data* decompressor, int dictionary_size);
 void decompress_LZ78(const char *input_filename, const char *output_file_name, int dictionary_size);
