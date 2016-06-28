@@ -16,7 +16,7 @@
 
 struct table_key{
     int father;
-    char code;
+    unsigned char code;
 };
 
 struct entry_table{

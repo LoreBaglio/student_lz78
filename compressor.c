@@ -85,6 +85,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
         }
 
     }
+    //Attach CRC
+    fseek(bitio->f, crc_header_offset, SEEK_SET);
+    fwrite(&remainder,sizeof(crc),1,bitio->f);
 
     //end_compressed_file();
     bitio_close(bitio);
@@ -93,9 +96,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     destroy(compressor->dictionary);
     free(compressor);
 
-    //Attach CRC
-    fseek(bitio->f, crc_header_offset, SEEK_SET);
-    fwrite(&remainder,sizeof(crc),1,bitio->f);
+
 }
 
 /**
@@ -119,16 +120,20 @@ void dictionary_init(struct compressor_data *compressor, int symbol_alphabet, in
     bits_per_code = compute_bit_to_represent(dictionary_size);
 
     // Prepare all first children (256 Ascii Symbols)
-    char child_symbol;
-    struct table_key * node_key = calloc(1, sizeof(struct table_key));
+    unsigned char child_symbol;
+    struct table_key* node_key = malloc(sizeof(struct table_key));
 
     // ASCII on project assumption is the only considered alphabet
     if(symbol_alphabet == ASCII_ALPHABET){
 
+        int end_loop = 0;
         node_key -> father = ROOT;
 
         // Create children
-        for( child_symbol = ROOT + 1; child_symbol < EOF_CODE; child_symbol++ ){
+        for( child_symbol = ROOT + 1; !end_loop; child_symbol++ ){
+
+            if (child_symbol == 255)
+                end_loop = 1;
 
             node_key->code = child_symbol;
             put(compressor -> dictionary, node_key, ++compressor->node_count);

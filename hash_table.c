@@ -203,7 +203,7 @@ struct hash_table *create(int size) {
 
     // Average number of collision
     array_size = select_hash_size(size);
-    hash_table->table = calloc(1 , sizeof(struct entry_table* ) * array_size);
+    hash_table->table = calloc(array_size , sizeof(struct entry_table*));
 
     if (hash_table->table == NULL){
         printf("Failed to allocate memory\n");
@@ -214,7 +214,7 @@ struct hash_table *create(int size) {
     hash_table->effective_size = size;
     hash_table->entry_counter = 0;
 
-    for (i = 0; i < size; i++)
+    for (i = 0; i < hash_table->size; i++)
         hash_table->table[i] = NULL;
 
     return hash_table;

@@ -6,7 +6,7 @@
 
 
 void decompressor_init(struct decompressor_data *decompressor, int dictionary_size) {
-    char c = 0;
+	unsigned char c = 0;
     uint16_t k;
 
     // Start to count new nodes from EOF (excluded) (0 root, 1-256 first children, 257 EOF)
@@ -20,9 +20,14 @@ void decompressor_init(struct decompressor_data *decompressor, int dictionary_si
 
     //Init array //FIXME Pensare al fatto che il primo elemento
     for (k = ROOT + 1; k < EOF_CODE; k++) {
+
         decompressor->dictionary[k].c = c;
         decompressor->dictionary[k].parent = 0;
-        c++;
+
+		if (c == 255)
+			break;
+		else
+        	c++;
     }
 }
 
