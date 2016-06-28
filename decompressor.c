@@ -149,7 +149,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 	FILE* input_file;
 	FILE* output_file;
     char extracted_parent = 0, extracted_c;
-	int received_parent, previous_node = ROOT;
+	uint64_t received_parent, previous_node = ROOT;
 	int index = 0;
 	int i;
 	int len = 0;
@@ -176,17 +176,17 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 	// Set encoding number of bits and eof code
 	params.bits_per_code = compute_bit_to_represent(dictionary_size);
 
+    //Init bitio
+	bitio = bitio_open(input_file,READ);
+
 	while(1){
 
-
-		if(read_code(...) != bits_per_code){
-		    printf("Error: corrupted code");
+		if(read_code(bitio, &received_parent) != bits_per_code){
+		    printf("Error: corrupted code");        //Fixme è corretto questo check?
 		    exit(1);
 		}
-		//TODO usare la read_code sopra
-		read_data((void*)&(received_parent), 1, sizeof(int), input_file);
 
-		//controllo se non ho letto EOF
+		//controllo se non ho letto EOF     //FIXME decidere definitivamente se usare nodo EOF o semplicemente feof
 		if(feof(input_file)){
 			printf("Decompression finished\n");
 			break;
