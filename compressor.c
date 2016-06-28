@@ -100,7 +100,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     //chiamare la check_size prima della fseek?altrimenti il puntatore non è più in fondo al file
     is_compressed = check_size(bitio->f, head->file_size, header_size);
 
-    if(is_compressed){
+    if(is_compressed == 0){
 
         // FIXME TEST THIS!
         // posizione su bit is compressed
