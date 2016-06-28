@@ -17,6 +17,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     struct bitio* bitio;
     int crc_header_offset = 0;
     int ret;
+    struct file_header* head = (struct file_header*)malloc(sizeof(struct file_header));
 
     // Prepare all characters as first children of the root of the tree
     dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
@@ -37,7 +38,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
     node_key = calloc(1, sizeof(struct table_key));
 
-    crc_header_offset = insert_header(input_filename, dictionary_size, bitio->f);
+    crc_header_offset = insert_header(input_filename, dictionary_size, bitio->f, head);
 
     while(!feof(input_fp)) {
 
@@ -88,6 +89,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     //Attach CRC
     fseek(bitio->f, crc_header_offset, SEEK_SET);
     fwrite(&remainder,sizeof(crc),1,bitio->f);
+
+    check_size(bitio->f, head->file_size, crc_header_offset + sizeof(int32_t));
+    //Attach CRC here or after?
 
     //end_compressed_file();
     bitio_close(bitio);

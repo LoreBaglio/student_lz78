@@ -44,10 +44,10 @@ FILE* open_file(const char* filename, u_int mode);
 void compare_filenames(const char* input_name, const char* output_name);
 void read_data(void* dest, int n, int size, FILE* fp);
 void write_data(void* sr, int n, int size, FILE* fp);
-int insert_header(const char* filename, int dictionary_size, FILE* fp);
+int insert_header(const char* filename, int dictionary_size, FILE* fp, struct file_header*);
 void read_header(FILE*, struct file_header*);
 crc crc32b(uint8_t const *, int);
 void step_crc(crc* , char);
-
+void check_size(FILE* compressed_file, int original_size, int header_size);
 
 #endif //STUDENT_LZ78_FILE_IO_H
