@@ -108,7 +108,7 @@ void init_tree_with_first_children(struct compressor_data* compressor, int symbo
         node_key -> father = ROOT;
 
         // Create children
-        for( child_symbol = ROOT + 1; child_symbol < EOF; child_symbol++ ){
+        for( child_symbol = ROOT + 1; child_symbol < EOF_CODE; child_symbol++ ){
 
             node_key->code = child_symbol;
             put(compressor -> dictionary, node_key, ++compressor->node_count);

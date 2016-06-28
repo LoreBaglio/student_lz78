@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "compressor.h"
+#include "decompressor.h"
 
 #define DEFAULT_DICTIONARY_SIZE 4096
 #define MIN_DICTIONARY_SIZE 256

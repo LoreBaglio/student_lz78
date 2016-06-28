@@ -10,7 +10,7 @@
 #define STUDENT_LZ78_SYMBOL_IO_H
 // Classe che potremmo fondere in file_io
 
-#define EOF 257
+#define EOF_CODE 257
 #define ROOT 0
 #define ASCII_ALPHABET 1     // Assumption for the project: symbols are characters
 

@@ -10,7 +10,7 @@ void decompressor_init(struct decompressor_data *decompressor, int dictionary_si
     uint16_t k;
 
     // Start to count new nodes from EOF (excluded) (0 root, 1-256 first children, 257 EOF)
-    decompressor -> node_count = EOF;
+    decompressor -> node_count = EOF_CODE;
 
     decompressor->dictionary = (struct elem *) calloc(1, dictionary_size * sizeof(struct elem));
 
@@ -19,7 +19,7 @@ void decompressor_init(struct decompressor_data *decompressor, int dictionary_si
     decompressor->dictionary[0].parent = 0;
 
     //Init array //FIXME Pensare al fatto che il primo elemento
-    for (k = ROOT + 1; k < EOF; k++) {
+    for (k = ROOT + 1; k < EOF_CODE; k++) {
         decompressor->dictionary[k].c = c;
         decompressor->dictionary[k].parent = 0;
         c++;
@@ -149,7 +149,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 	FILE* input_file;
 	FILE* output_file;
     char extracted_parent = 0, extracted_c;
-	int received_parent, previous_node = ROOT;
+	int current_node, previous_node = ROOT;
 	int index = 0;
 	int i;
 	int len = 0;
@@ -165,7 +165,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
    	read_header(input_file, header);
 
    	// Get the dictionary size from the header of the compressed file
-    dictionary_size = head -> dictionary_size;
+    dictionary_size = header -> dictionary_size;
 
     //inizializzo la pila per la decompressione
     struct stack* s = calloc(1, sizeof(struct stack));
@@ -174,7 +174,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
     decompressor_init(decompressor, dictionary_size);
 
 	// Set encoding number of bits and eof code
-	params.bits_per_code = compute_bit_to_represent(dictionary_size);
+	bits_per_code = compute_bit_to_represent(dictionary_size);
 
 	while(1){
 
@@ -184,7 +184,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 		    exit(1);
 		}
 		//TODO usare la read_code sopra
-		read_data((void*)&(received_parent), 1, sizeof(int), input_file);
+		read_data((void*)&(current_node), 1, sizeof(int), input_file);
 
 		//controllo se non ho letto EOF
 		if(feof(input_file)){
@@ -192,11 +192,12 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 			break;
 		}
 
-		index = received_parent;
+		index = current_node;
 
         // Ad ogni ciclo controllo che il parent non sia zero
         // In tal caso push sulla pila
 
+		len = 0;
 		while(decompressor->dictionary[index].parent != 0){
             stack_push(s, decompressor->dictionary[index].c);
 			index = decompressor -> dictionary[index].parent;
@@ -243,7 +244,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
         }
 
         // Imposto il nodo ricevuto come prossimo nodo al quale aggiungeremo il figlio
-        previous_node = received_parent;
+        previous_node = current_node;
 
         // Dizionario pieno: svuotare tutto
         // FIXME discuterne
@@ -251,7 +252,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
         // perchè il dizionario si reinizalizza da solo
         // Sovrascrivendo i dati vecchi mano mano che si procede
         if(decompressor -> node_count == dictionary_size){
-            decompressor->node_count = EOF;
+            decompressor->node_count = EOF_CODE;
 		}
 
 	}
