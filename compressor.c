@@ -38,8 +38,7 @@ void compress(const char * input_filename, const char * output_file_name, int di
     out_fp = open_file(output_file_name,WRITE);
     node_key = malloc(sizeof(struct table_key));
 
-    //TODO incrementare crc_header_offset
-    insert_header_ottimizzato(input_filename, dictionary_size, out_fp);
+    crc_header_offset = insert_header_ottimizzato(input_filename, dictionary_size, out_fp);
 
     parent_node = ROOT;
 
@@ -86,7 +85,7 @@ void compress(const char * input_filename, const char * output_file_name, int di
     fclose(out_fp);
     fclose(in_fp);
 
-    //Attach CRC //TODO calcolare lunghezza effettiva header dovuta a filename variabile
+    //Attach CRC
     fseek(out_fp, crc_header_offset, SEEK_SET);
     fwrite(&remainder,sizeof(crc),1,out_fp);
 }
