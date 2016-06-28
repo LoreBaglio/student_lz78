@@ -16,11 +16,12 @@ void compress(const char * input_filename, const char * output_file_name, int di
     struct file_header* header = malloc(sizeof(struct file_header));
 
     // Variables for each step of lookup
-    int parent_node = ROOT;
+    uint64_t parent_node = ROOT;
     char current_symbol;
     struct table_key * node_key;
     int child_node = 0;
     crc remainder = 0;
+    struct *bitio bitio;
     int crc_header_offset = 0;
 
     compressor -> dictionary = create(dictionary_size);
@@ -38,6 +39,9 @@ void compress(const char * input_filename, const char * output_file_name, int di
     node_key = malloc(sizeof(struct table_key));
 
     crc_header_offset = insert_header_ottimizzato(input_filename, dictionary_size, out_fp);
+
+    //Init bitio
+    bitio = bitio_open(out_fp,WRITE);
 
     parent_node = ROOT;
 
@@ -57,7 +61,7 @@ void compress(const char * input_filename, const char * output_file_name, int di
         if (child_node == NO_ENTRY_FOUND) {
 
             //Parent node code emission
-            write_data(&parent_node,1,sizeof(parent_node),out_fp);
+            write_code(bitio,parent_node);
 
             if(!compressor->full_dictionary){
                 // Increment node_count and put as new child id
