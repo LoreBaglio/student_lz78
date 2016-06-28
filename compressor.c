@@ -90,6 +90,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
         }
 
     }
+    
     //Attach CRC
     fseek(bitio->f, crc_header_offset, SEEK_SET);
     fwrite(&remainder,sizeof(crc),1,bitio->f);
