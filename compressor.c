@@ -73,7 +73,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
                 exit(1);
             }
 
-            if(table_is_full(compressor->dictionary)){
+            if(!table_is_full(compressor->dictionary)){
                 // Increment node_count and put as new child id
                 put(compressor -> dictionary, node_key, ++compressor->node_count);
                 // Restart from one-char node
