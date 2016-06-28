@@ -57,9 +57,12 @@ int write_code(struct bitio* b, int size, uint64_t data){
     // <scrivi e shifta puntatore>
     // <se sfora, scrivere un pezzo e scrivere il resto nel prossimo uint_64>
 	int space, ret;
-	if(b == NULL || b->mode != 1){
+	if(b == NULL || b->mode != 1 || size > 64){
 		errno = EINVAL;
 		return -1;
+	}
+	if(size == 0){
+		return 0;
 	}
 	space = 64 - b->wp;
 	data &= (1UL << size) - 1;
@@ -84,13 +87,16 @@ int write_code(struct bitio* b, int size, uint64_t data){
 /*
     Return number of read bits if positive, error if negative
 */
-int read_code(struct bitio* b, int size, uint64_t* my_data){
+int read_code(struct bitio* b, u_int size, uint64_t* my_data){
 	int space;
 	int ret;
-	if(b == NULL || b->mode != 0){
+	if(b == NULL || b->mode != 0 || size > 64){
 		errno = EINVAL;
 		return -1;
 	}
+	if(size == 0){
+    	return 0;
+    }
 	*my_data = 0;
 	space = b->wp - b->rp;
 	if(size <= space){
