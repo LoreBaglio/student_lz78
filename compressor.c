@@ -10,7 +10,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
     // Variables for each step of lookup
     int parent_node = ROOT;
-    char current_symbol;
+    unsigned char current_symbol;
     struct table_key * node_key;
     int child_node = 0;
     crc remainder = 0;

@@ -53,7 +53,7 @@ int write_code(struct bitio* b, uint64_t data){
     // <azzera uint64>
     // <scrivi e shifta puntatore>
     // <se sfora, scrivere un pezzo e scrivere il resto nel prossimo uint_64>
-	int space;
+	int space, ret;
 	if(b == NULL || b->mode != 1){
 		errno = EINVAL;
 		return -1;
@@ -66,7 +66,8 @@ int write_code(struct bitio* b, uint64_t data){
 	}
 	else{
 		b->data |= data << b->wp;
-		/*if(fwrite((void*)&b->data, 1, 8, b->f) != 1){
+		ret = fwrite((void*)&b->data, 1, 8, b->f);
+		/*if( ret != 1){
 			errno = ENOSPC;
 			return -1;
 		}*/
@@ -117,8 +118,8 @@ int read_code(struct bitio* b, uint64_t* my_data){
 	}
 }
 
-int compute_bit_to_represent(int arg){
-    return (int) ceil(log(arg));
+u_int compute_bit_to_represent(int arg){
+    return (u_int) ceil(log(arg) / log(2));
 }
 
 int end_compressed_file(){

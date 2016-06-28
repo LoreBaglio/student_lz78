@@ -13,7 +13,7 @@ struct compressor_data {
     int node_count;
 };
 
-extern int bits_per_code;
+extern u_int bits_per_code;
 
 void compress(const char*,const char*,int);
 void dictionary_init(struct compressor_data *, int, int);
