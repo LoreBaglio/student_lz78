@@ -19,6 +19,9 @@ struct bitio* bitio_open(const char* filename, u_int mode)
 		return NULL;
 	}
 
+	// Init global var
+	size_bitio_block = sizeof(b->data);
+
 	b->f = fopen(filename, (mode == 0) ? "r" : "w");
 
 	if (b->f == NULL){
@@ -59,10 +62,10 @@ int write_code(struct bitio* b, uint64_t data){
 		return -1;
 	}
 	space = 64 - b->wp;
-	data &= (1UL << bits_per_code) - 1;
-	if(bits_per_code <= space){
+	data &= (1UL << size) - 1;
+	if(size <= space){
 		b->data |= data << b->wp;
-		b->wp += bits_per_code;
+		b->wp += size;
 	}
 	else{
 		b->data |= data << b->wp;
@@ -71,17 +74,16 @@ int write_code(struct bitio* b, uint64_t data){
 			return -1;
 		}*/
 		b->data = data >> space;
-		b->wp = bits_per_code - space;
+		b->wp = size - space;
 	}
 	return 0;
 
 }
 
 /*
-    Read a code from compressed file.
     Return number of read bits if positive, error if negative
 */
-int read_code(struct bitio* b, uint64_t* my_data){
+int read_code(struct bitio* b, int size, uint64_t* my_data){
 	int space;
 	int ret;
 	if(b == NULL || b->mode != 0){
@@ -90,9 +92,9 @@ int read_code(struct bitio* b, uint64_t* my_data){
 	}
 	*my_data = 0;
 	space = b->wp - b->rp;
-	if(bits_per_code <= space){
-		*my_data = (b->data >> b->rp)&((1UL << bits_per_code) - 1);
-		b->rp += bits_per_code;
+	if(size <= space){
+		*my_data = (b->data >> b->rp)&((1UL << size) - 1);
+		b->rp += size;
 	}
 	else{
 		*my_data = (b->data >> b->rp);
@@ -102,11 +104,11 @@ int read_code(struct bitio* b, uint64_t* my_data){
 			return -1;
 		}
 		b->wp = ret * 8;
-		if(b->wp >= bits_per_code - space){
+		if(b->wp >= size - space){
 			*my_data |= b->data << space;
-			*my_data &= (1UL << bits_per_code) - 1;
-			b->rp = bits_per_code - space;
-			return bits_per_code;
+			*my_data &= (1UL << size) - 1;
+			b->rp = size - space;
+			return size;
 		}
 		else{
 			*my_data |= b->data << space;

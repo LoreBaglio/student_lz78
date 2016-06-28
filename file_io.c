@@ -213,7 +213,7 @@ int insert_header(const char *filename, int dictionary_size, FILE *fp, struct fi
 
 }
 
-void check_size(FILE* compressed_file, int original_size, int header_size)
+int check_size(FILE* compressed_file, int original_size, int header_size)
 {
 	int new_size;
 
@@ -222,9 +222,11 @@ void check_size(FILE* compressed_file, int original_size, int header_size)
 
 	if (original_size >= new_size){
 		printf("compression finished successfully\n");
+		return 1;
 	}
 	else{
 		printf("compression finished unsuccessfully\n");
+	    return 0;
 	}
 }
 

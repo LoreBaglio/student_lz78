@@ -15,6 +15,7 @@
 #define ASCII_ALPHABET 1     // Assumption for the project: symbols are characters
 
 int bits_per_code; // Viene settata dal compressor in quanto è dichiarata extern in compressor.h
+int size_block_bitio;
 
 struct bitio{
     FILE* f;
@@ -24,8 +25,8 @@ struct bitio{
     u_int mode;
 };
 
-int read_code(struct bitio*, uint64_t* result);
-int write_code(struct bitio*, uint64_t data);
+int read_code(struct bitio*,int size, uint64_t* result);
+int write_code(struct bitio*, int size, uint64_t data);
 struct bitio* bitio_open(const char* filename, u_int mode);
 int bitio_close(struct bitio*);
 int compute_bit_to_represent(int);

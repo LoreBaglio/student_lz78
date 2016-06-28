@@ -158,6 +158,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 	int len = 0;
     int new_node_count;
     int32_t dictionary_size;
+    uint64_t is_compressed;
     struct bitio* bitio;
 	struct decompressor_data * decompressor = calloc(1, sizeof(struct decompressor_data));
 	struct file_header* header = calloc(1, sizeof(struct file_header));
@@ -168,6 +169,12 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
    	output_file = open_file(output_file_name, WRITE);
 
    	read_header(bitio->f, header);
+
+   	read_code(bitio,1,&is_compressed);
+
+   	if(is_compressed == 0){
+   	    // FIXME don't decompress
+   	}
 
    	// Get the dictionary size from the header of the compressed file
     dictionary_size = header -> dictionary_size;
@@ -184,7 +191,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 
 	while(1){
 
-		if(read_code(bitio, &current_node) != bits_per_code){
+		if(read_code(bitio,bits_per_code, &current_node) != bits_per_code){
 		    printf("Error: corrupted code");        //Fixme è corretto questo check?
 		    exit(1);
 		}

@@ -17,6 +17,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     struct bitio* bitio;
     int crc_header_offset = 0;
     int ret;
+    uint64_t is_compressed,tmp;
     struct file_header* head = (struct file_header*)malloc(sizeof(struct file_header));
 
     // Prepare all characters as first children of the root of the tree
@@ -39,6 +40,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     node_key = calloc(1, sizeof(struct table_key));
 
     crc_header_offset = insert_header(input_filename, dictionary_size, bitio->f, head);
+    // Write is_compressed and in case of compressed file larger than original,
+    // reset the flag at the end
+    write_code(bitio,1,1);
 
     while(!feof(input_fp)) {
 
@@ -56,7 +60,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
         if (child_node == NO_ENTRY_FOUND) {
 
             //Parent node code emission
-            ret = write_code(bitio,parent_node);
+            ret = write_code(bitio, bits_per_code, parent_node);
 
             if (ret < 0){
                 printf("Error when writing to file %s\n", output_file_name);
@@ -90,8 +94,30 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     fseek(bitio->f, crc_header_offset, SEEK_SET);
     fwrite(&remainder,sizeof(crc),1,bitio->f);
 
-    check_size(bitio->f, head->file_size, crc_header_offset + sizeof(int32_t));
-    //Attach CRC here or after?
+    header_size = crc_header_offset + sizeof(int32_t);
+
+    is_compressed = check_size(bitio->f, head->file_size, header_size);
+    // posizione su bit is compressed
+
+    if(is_compressed){
+
+        // FIXME TEST THIS!
+
+        fseek(bitio->f, header_size, SEEK_SET);
+
+        // Leggo 64 bit
+        fread(&tmp, 1, size_block_bitio, bitio->f);
+
+        // Setto il primo bit a 0
+        tmp &= (1 << (size_block_bitio*8 - 1)) - 1;
+
+        // Riscrivo il byte
+        fseek(bitio->f, header_size, SEEK_SET);
+        fwrite(&tmp, 1, size_block_bitio, bitio->f);
+
+    }
+
+    //Attach CRC here or after? // FIXME Gestire doppio CRC, compresso/non compresso
 
     //end_compressed_file();
     bitio_close(bitio);
