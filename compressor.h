@@ -7,8 +7,6 @@
 #include "hash_table.h"
 #include "encode.h"
 
-#define ASCII_ALPHABET 1     // Assumption for the project: symbols are characters
-#define ROOT 0
 
 struct compressor_data;
 extern int bits_per_code;
