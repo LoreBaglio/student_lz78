@@ -87,7 +87,7 @@ int write_code(struct bitio* b, int size, uint64_t data){
 /*
     Return number of read bits if positive, error if negative
 */
-int read_code(struct bitio* b, u_int size, uint64_t* my_data){
+int read_code(struct bitio* b, int size, uint64_t* my_data){
 	int space;
 	int ret;
 	if(b == NULL || b->mode != 0 || size > 64){
