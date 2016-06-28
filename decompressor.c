@@ -210,8 +210,10 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 		index = current_node;
 
         //Check if it's not a sequence, but a single char
-        if(index < EOF)
+        if(index < EOF){
             extracted_parent = decompressor->dictionary[index].c;
+            write_data(&extracted_parent, 1, 1, output_file);
+        }
 
         else {
             // Ad ogni ciclo controllo che il parent non sia zero
@@ -231,20 +233,21 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
                 printf("Error during decompression: stack is empty and it shouldn't..\n");
                 exit(1);
             }
-        }
 
-        write_data(&extracted_parent, 1, 1, output_file);
+            write_data(&extracted_parent, 1, 1, output_file);
 
-        // Ciclo di estrazione (non vorrei aver esagerato con l'ottimizzazione)
-        for (i = 1; i < len; i++){
-            extracted_c = stack_pop(s);
-            write_data(&extracted_c, 1, 1, output_file);
-        }
+            // Ciclo di estrazione (non vorrei aver esagerato con l'ottimizzazione)
+            for (i = 1; i < len; i++){
+                extracted_c = stack_pop(s);
+                write_data(&extracted_c, 1, 1, output_file);
+            }
 
-        // Defensive programming
-        if (stack_pop(s) != EMPTY_STACK){
-            printf("Error during decompression: stack is not empty\n");
-            exit(1);
+            // Defensive programming
+            if (stack_pop(s) != EMPTY_STACK){
+                printf("Error during decompression: stack is not empty\n");
+                exit(1);
+            }
+
         }
 
         // Aggiungo nodo al dizionario
@@ -274,7 +277,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
         // Sovrascrivendo i dati vecchi mano mano che si procede
         if(decompressor -> node_count == dictionary_size){
             decompressor->node_count = EOF_CODE;
-		}
+        }
 
 	}
 
