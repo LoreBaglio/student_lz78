@@ -3,6 +3,62 @@
 #include "file_io.h"
 #include "compressor.h"
 
+
+
+void decompressor_init(struct decompressor_data *decompressor, int dictionary_size) {
+    char c = 0;
+    uint16_t k;
+
+    decompressor -> node_count = EOF;
+
+    decompressor->dictionary = (struct elem *) calloc(1, dictionary_size * sizeof(struct elem));
+
+    //inizializzo il nodo radice
+    decompressor->dictionary[0].c = '0';
+    decompressor->dictionary[0].parent = 0;
+
+    //Init array //FIXME Pensare al fatto che il primo elemento
+    for (k = ROOT + 1; k < EOF; k++) {
+        decompressor->dictionary[k].c = c;
+        decompressor->dictionary[k].parent = 0;
+        c++;
+    }
+}
+
+
+
+// Function handling stack
+
+int stack_push(struct stack* s, char const c) {
+
+    if (s->top == s->size - 1)
+        return FULL_STACK;
+
+    s->stk[++s->top] = c;
+
+    return PUSH_SUCCESSFUL;
+}
+
+void stack_init(struct stack* s, int size) {
+
+    s->stk = calloc(size, sizeof(char));
+    if (s->stk == NULL) {
+        printf("Cannot allocate memory for the stack\n");
+        exit(1);
+    }
+    s->top = -1;
+    s->size = size;
+
+}
+
+char stack_pop(struct stack* s) {
+
+    if (s->top == -1)
+        return EMPTY_STACK;
+
+    return s->stk[s->top--];
+}
+
 void decompress_LZ78(const char *input_filename, const char *output_file_name, int dictionary_size)
 {
 	FILE* input_file;
@@ -19,7 +75,7 @@ void decompress_LZ78(const char *input_filename, const char *output_file_name, i
 	struct file_header* head = (struct file_header*)malloc(sizeof(struct file_header));
 
 	decompressor -> node_count = 1;
-	decompressor -> dictionary = (struct elem*)malloc(dictionary_size*sizeof(struct elem));
+	decompressor -> dictionary = (struct elem*)calloc(dictionary_size, sizeof(struct elem));
 
 	//inizializzo il nodo radice
 	decompressor -> dictionary[0].c = '0';
@@ -92,32 +148,20 @@ void decompress_LZW(const char *input_filename, const char *output_file_name, in
 
 	FILE* input_file;
 	FILE* output_file;
-	char* output_string;
-	char received_c;
-	int received_parent;
+    char extracted_parent = 0, extracted_c;
+	int received_parent, previous_node = ROOT;
 	int index = 0;
-	int old_code = 0;
-	uint8_t c = 0;
-	int j,i,k;
+	int i;
 	int len = 0;
-	int offset;
-	struct decompressor_data * decompressor = malloc(sizeof(struct decompressor_data));
-	struct file_header* head = (struct file_header*) malloc(sizeof(struct file_header));
+    int new_node_count;
+	struct decompressor_data * decompressor = calloc(1, sizeof(struct decompressor_data));
+	struct file_header* header = calloc(1, sizeof(struct file_header));
 
-	decompressor -> node_count = 257;
-	decompressor -> dictionary = (struct elem*) malloc(dictionary_size * sizeof(struct elem));
+    //inizializzo la pila per la decompressione
+    struct stack* s = calloc(1, sizeof(struct stack));
+    stack_init(s, dictionary_size);
 
-	//inizializzo il nodo radice
-	decompressor -> dictionary[0].c = '0';
-	decompressor -> dictionary[0].parent = 0;
-
-	//Init array //FIXME Pensare al fatto che il primo elemento
-	//problemi con le macro ROOT e EOF ho messo i numeri
-	for (k = 1; k < 257; k++) {
-		decompressor->dictionary[k].c = c;
-		decompressor->dictionary[k].parent = 0;
-		c++;
-	}
+    decompressor_init(decompressor, dictionary_size);
 
 	input_file = open_file(input_filename, READ);
 	output_file = open_file(output_file_name, WRITE);
@@ -125,7 +169,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name, in
 	// Set encoding number of bits and eof code
 	params.bits_per_code = compute_bit_to_represent(dictionary_size);
 
-	read_header(input_file, head);
+	read_header(input_file, header);
 
 	while(1){
 
@@ -134,52 +178,89 @@ void decompress_LZW(const char *input_filename, const char *output_file_name, in
 
 		//controllo se non ho letto EOF
 		if(feof(input_file)){
-			fclose(input_file);
-			fclose(output_file);
-			printf("decompression finished\n");
+			printf("Decompression finished\n");
 			break;
 		}
 
 		index = received_parent;
-		//TODO fare pila
 
-		while(index != 0){
-			i = index;
-			index = decompressor -> dictionary[i].parent;
-			len++;
+        // Ad ogni ciclo controllo che il parent non sia zero
+        // In tal caso push sulla pila
+
+		while(decompressor->dictionary[index].parent != 0){
+            stack_push(s, decompressor->dictionary[index].c);
+			index = decompressor -> dictionary[index].parent;
+            len++;
 		}
 
-		output_string = (char*)malloc(len);
+        extracted_parent = stack_pop(s);
 
-		decompressor -> dictionary[decompressor -> node_count].parent = received_parent;
-		index = decompressor -> dictionary[received_parent].parent;
-		output_string[len - 1] = decompressor -> dictionary[received_parent].c;
+        // Defensive programming
+        if (extracted_parent == EMPTY_STACK){
+            printf("Error during decompression: stack is empty and it shouldn't..\n");
+            exit(1);
+        }
 
-		j = 1;
-		while(index != 0){
-			output_string[len - 1 - j] = decompressor -> dictionary[index].c;
-			i = index;
-			index = decompressor -> dictionary[i].parent;
-			j++;
-		}
+        write_data(&extracted_parent, 1, 1, output_file);
 
-		write_data((void*)output_string, 1, len, output_file);
+        // Ciclo di estrazione (non vorrei aver esagerato con l'ottimizzazione)
+        for (i = 1; i < len; i++){
+            extracted_c = stack_pop(s);
+            write_data(&extracted_c, 1, 1, output_file);
+        }
 
-		decompressor -> dictionary[old_code].c = output_string[0];
-		old_code = decompressor -> node_count;
-		decompressor -> node_count++;
+        // Defensive programming
+        if (stack_pop(s) != EMPTY_STACK){
+            printf("Error during decompression: stack is not empty\n");
+            exit(1);
+        }
 
-		len = 0;
-		free(output_string);
-		
+        // Aggiungo nodo al dizionario
+        if (previous_node != ROOT) {
+            /** Se vogliamo ottimizzare togliendo la variabile bisogna fare così
+             *  decompressor->dictionary[++decompressor->node_count].parent = previous_node;
+             *  decompressor->dictionary[decompressor->node_count].c = output_string[0];
+             *
+             *  (Il male secondo me)
+             */
+            new_node_count = ++decompressor->node_count;
+            decompressor->dictionary[new_node_count].parent = previous_node;
+            // extracted_parent "dovrebbe" puntare all'ultimo carattere estratto dalla pila
+            // quindi al carattere giusto da aggiungere come ultimo figlio letto
+            // (primo nella sequenza di pop)
+            decompressor->dictionary[new_node_count].c = extracted_parent;
 
-		if(decompressor -> node_count == dictionary_size){//TODO
-			
+        }
+
+        // Imposto il nodo ricevuto come prossimo nodo al quale aggiungeremo il figlio
+        previous_node = received_parent;
+
+        // Dizionario pieno: svuotare tutto
+        // FIXME discuterne
+        // Secondo me non bisogna proprio fare nulla eccetto il reset del nodecount
+        // perchè il dizionario si reinizalizza da solo
+        // Sovrascrivendo i dati vecchi mano mano che si procede
+        if(decompressor -> node_count == dictionary_size){
+            decompressor->node_count = EOF;
 		}
 
 	}
 
+    fclose(input_file);
+    fclose(output_file);
+
+    bzero(decompressor, sizeof(struct decompressor_data));
+    free(decompressor);
+
+    bzero(s->stk, s->size * sizeof(char));
+    free(s);
+
+    bzero(header, sizeof(struct file_header));
+    free(header);
+
 }
+
+
 
 
 
