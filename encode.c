@@ -52,7 +52,7 @@ int bitio_close(struct bitio* b)
 	return ret;
 }
 
-int write_code(struct bitio* b, uint64_t data){
+int write_code(struct bitio* b, int size, uint64_t data){
     // <azzera uint64>
     // <scrivi e shifta puntatore>
     // <se sfora, scrivere un pezzo e scrivere il resto nel prossimo uint_64>

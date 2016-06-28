@@ -18,6 +18,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     int crc_header_offset = 0;
     int ret;
     uint64_t is_compressed,tmp;
+    int header_size;
     struct file_header* head = (struct file_header*)malloc(sizeof(struct file_header));
 
     // Prepare all characters as first children of the root of the tree
@@ -96,7 +97,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     fwrite(&remainder,sizeof(crc),1,bitio->f);
 
     header_size = crc_header_offset + sizeof(int32_t);
-
+    //chiamare la check_size prima della fseek?altrimenti il puntatore non è più in fondo al file
     is_compressed = check_size(bitio->f, head->file_size, header_size);
 
     if(is_compressed){
