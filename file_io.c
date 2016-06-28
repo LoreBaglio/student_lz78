@@ -183,12 +183,11 @@ void step_crc(crc* remainder, char c) {
 
 }
 
-int insert_header(const char *filename, int dictionary_size, FILE *fp) 
+int insert_header(const char *filename, int dictionary_size, FILE *fp, struct file_header* head) 
 {
-    struct file_header* head;
+    
     int crc_offset = 0;
 
-    head = (struct file_header*)malloc(sizeof(struct file_header));
     get_header(filename, head, dictionary_size);
 
     write_data((void*)&(head->compression_algorithm_code), 1, sizeof(int8_t), fp);
@@ -214,7 +213,20 @@ int insert_header(const char *filename, int dictionary_size, FILE *fp)
 
 }
 
+void check_size(FILE* compressed_file, int original_size, int header_size)
+{
+	int new_size;
 
+   	new_size = (int)ftell(compressed_file);
+	new_size -= header_size;
+
+	if (original_size >= new_size){
+		printf("compression finished successfully\n");
+	}
+	else{
+		printf("compression finished unsuccessfully\n");
+	}
+}
 
 /*void insert_header(const char* filename, int dictionary_size)
 {
