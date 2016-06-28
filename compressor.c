@@ -18,19 +18,8 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     int crc_header_offset = 0;
     int ret;
 
-    compressor -> dictionary = create(dictionary_size);
-
-    if (compressor->dictionary == NULL){
-        printf("Cannot allocate dictionary of the specified size\n");
-        exit(1);
-    }
-
-    compressor -> node_count = 1;       //0 is the ROOT, 2^(BIT_PER_CODE) - 1 is EOF
-    // Dictionary is considered full when the next node to be created is 2^N - 1.
-    // That code is reserved for END_OF_FILE code
-
     // Prepare all characters as first children of the root of the tree
-    init_tree_with_first_children(compressor, ASCII_ALPHABET, dictionary_size);
+    dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
 
     //Init bitio
     bitio = bitio_open(output_file_name,WRITE);
@@ -82,9 +71,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
             }
             else {
                 destroy(compressor->dictionary);
-                compressor->dictionary = create(dictionary_size);
-                compressor->node_count = 1;
-                init_tree_with_first_children(compressor, ASCII_ALPHABET, dictionary_size);
+                dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
 
                 // Increment node_count and put as new child id
                 put(compressor -> dictionary, node_key, ++compressor->node_count);
@@ -112,10 +99,21 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 }
 
 /**
- * This function prepares all the children of the root, corresponding to all symbols of the alphabet (costly to look along all the file to
+ * This function prepares the dictionary, all the children of the root, corresponding to all symbols of the alphabet (costly to look along all the file to
  * find just the subset of symbols that appears)
  */
-void init_tree_with_first_children(struct compressor_data* compressor, int symbol_alphabet, int dictionary_size){
+void dictionary_init(struct compressor_data *compressor, int symbol_alphabet, int dictionary_size){
+
+    compressor -> dictionary = create(dictionary_size);
+
+    if (compressor->dictionary == NULL){
+        printf("Cannot allocate dictionary of the specified size\n");
+        exit(1);
+    }
+
+    compressor -> node_count = 1;       //0 is the ROOT, 2^(BIT_PER_CODE) - 1 is EOF
+    // Dictionary is considered full when the next node to be created is 2^N - 1.
+    // That code is reserved for END_OF_FILE code
 
     // Set encoding number of bits and eof code
     bits_per_code = compute_bit_to_represent(dictionary_size);

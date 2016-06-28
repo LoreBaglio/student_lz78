@@ -16,6 +16,6 @@ struct compressor_data {
 extern int bits_per_code;
 
 void compress(const char*,const char*,int);
-void init_tree_with_first_children(struct compressor_data*, int, int);
+void dictionary_init(struct compressor_data *, int, int);
 
 #endif //STUDENT_LZ78_COMPRESSOR_H
