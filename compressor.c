@@ -86,12 +86,11 @@ void compress(const char * input_filename, const char* output_file_name, int dic
         }
 
     }
+    
+    check_size(bitio->f, head->file_size, crc_header_offset + sizeof(int32_t));
     //Attach CRC
     fseek(bitio->f, crc_header_offset, SEEK_SET);
     fwrite(&remainder,sizeof(crc),1,bitio->f);
-
-    check_size(bitio->f, head->file_size, crc_header_offset + sizeof(int32_t));
-    //Attach CRC here or after?
 
     //end_compressed_file();
     bitio_close(bitio);
