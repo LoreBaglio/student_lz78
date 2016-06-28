@@ -28,7 +28,6 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     compressor -> node_count = 1;       //0 is the ROOT, 2^(BIT_PER_CODE) - 1 is EOF
     // Dictionary is considered full when the next node to be created is 2^N - 1.
     // That code is reserved for END_OF_FILE code
-    compressor -> full_dictionary = 0;
 
     // Prepare all characters as first children of the root of the tree
     init_tree_with_first_children(compressor, ASCII_ALPHABET, dictionary_size);
@@ -74,7 +73,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
                 exit(1);
             }
 
-            if(!compressor->full_dictionary){
+            if(table_is_full(compressor->dictionary)){
                 // Increment node_count and put as new child id
                 put(compressor -> dictionary, node_key, ++compressor->node_count);
                 // Restart from one-char node
@@ -85,8 +84,13 @@ void compress(const char * input_filename, const char* output_file_name, int dic
                 destroy(compressor->dictionary);
                 compressor->dictionary = create(dictionary_size);
                 compressor->node_count = 1;
-                compressor->full_dictionary = 0;
                 init_tree_with_first_children(compressor, ASCII_ALPHABET, dictionary_size);
+
+                // Increment node_count and put as new child id
+                put(compressor -> dictionary, node_key, ++compressor->node_count);
+                // Restart from one-char node
+                node_key->father = ROOT;
+                parent_node = get(compressor->dictionary, node_key);
             }
         }
         else {

@@ -11,7 +11,6 @@
 struct compressor_data {
     struct hash_table * dictionary;
     int node_count;
-    int full_dictionary;
 };
 
 extern int bits_per_code;
