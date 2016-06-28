@@ -107,14 +107,14 @@ void compress(const char * input_filename, const char* output_file_name, int dic
         fseek(bitio->f, header_size, SEEK_SET);
 
         // Leggo 64 bit
-        fread(&tmp, 1, size_block_bitio, bitio->f);
+        fread(&tmp, 1, size_bitio_block, bitio->f);
 
         // Setto il primo bit a 0
-        tmp &= (1 << (size_block_bitio*8 - 1)) - 1;
+        tmp &= (1 << (size_bitio_block*8 - 1)) - 1;
 
         // Riscrivo il byte
         fseek(bitio->f, header_size, SEEK_SET);
-        fwrite(&tmp, 1, size_block_bitio, bitio->f);
+        fwrite(&tmp, 1, size_bitio_block, bitio->f);
 
     }
 
