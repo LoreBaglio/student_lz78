@@ -219,6 +219,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 		}
 
 		index = current_node;
+		
 
 		if (index == EOF_CODE)
 			break;
@@ -229,6 +230,9 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
             extracted_parent = decompressor->dictionary[index].c;
             write_data(&extracted_parent, 1, 1, output_file);
         }
+	else if(index > decompressor->node_count){
+		write_data(&extracted_parent, 1, 1, output_file);
+	}
         else {
             // Ad ogni ciclo controllo che il parent non sia zero
             // In tal caso push sulla pila
