@@ -6,14 +6,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define EMPTY_STACK -2
-#define FULL_STACK -1
 #define PUSH_SUCCESSFUL 0
 
 struct elem{
 	
 	unsigned char c;
-	uint64_t parent;
+	int parent;
 	//child id è la sua posizione nell'array
 };
 
@@ -26,7 +24,7 @@ struct decompressor_data{
 /* Structure definition for stack */
 struct stack
 {
-	char* stk;
+	unsigned char* stk;
 	int top;
 	int size;
 };
@@ -34,14 +32,14 @@ struct stack
 
 extern u_int bits_per_code;
 
-void decompressor_init(struct decompressor_data* decompressor, int dictionary_size);
+void decompressor_init(struct decompressor_data* decompressor, int dictionary_size, uint8_t already_init);
 void decompress_LZ78(const char *input_filename, const char *output_file_name, int dictionary_size);
 void decompress_LZW(const char * input_filename, const char * output_file_name);
+
 void stack_init(struct stack* s, int size);
+int stack_push(struct stack* s, unsigned char const c);
 
-int stack_push(struct stack* s, char const c);
-
-char stack_pop(struct stack* s);
+unsigned char stack_pop(struct stack* s);
 
 
 #endif //STUDENT_LZ78_DECOMPRESSOR_H

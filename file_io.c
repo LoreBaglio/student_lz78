@@ -115,11 +115,11 @@ FILE* open_file(const char* filename, u_int mode)
 
 void read_data(void* dest, int n, int size, FILE* fp)
 {
-	int ret = fread(dest, n, size, fp);
+	int ret = fread(dest, size, n, fp);
 	if(feof(fp)){
 		return;
 	}
-	if (ret < size){
+	if (ret < n){
 		printf("read(): error in reading data\n");
 		exit(1);
 	}
@@ -127,8 +127,8 @@ void read_data(void* dest, int n, int size, FILE* fp)
 
 void write_data(void* sr, int n, int size, FILE* fp)
 {
-	int ret = fwrite(sr, n, size, fp);
-	if(ret < size){
+	int ret = fwrite(sr, size, n, fp);
+	if(ret < n){
 		printf("write(): error in writing data\n");
 		exit(1);
 	}
@@ -213,7 +213,7 @@ int insert_header(const char *filename, int dictionary_size, FILE *fp, struct fi
 
 }
 
-int check_size(FILE* compressed_file, int original_size, int header_size)
+uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
 {
 	int new_size;
 

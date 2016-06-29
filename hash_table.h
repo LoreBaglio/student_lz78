@@ -28,7 +28,6 @@ struct entry_table{
 struct hash_table{
     int size;
     int effective_size;
-    int entry_counter;
     struct entry_table** table;
 };
 
@@ -45,4 +44,3 @@ void destroy(struct hash_table *);
 int compare_key(struct table_key*, struct table_key*);
 struct entry_table* lookup(struct hash_table*, struct table_key*);
 int count_digits(int);
-int table_is_full(struct hash_table *table);

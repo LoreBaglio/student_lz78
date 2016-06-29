@@ -51,9 +51,6 @@ int get(struct hash_table* hashtable, struct table_key* key) {
 
 int put(struct hash_table* hashtable, struct table_key* key, int value) {
 
-    if (table_is_full(hashtable))
-        return FULL_DICTIONARY;
-
     int hash_index = hash(key, hashtable->size);
     struct entry_table* bin = hashtable->table[hash_index];
     struct entry_table* last = NULL;
@@ -90,18 +87,12 @@ int put(struct hash_table* hashtable, struct table_key* key, int value) {
             entry->next = last;
         }
 
-        hashtable->entry_counter++;
-
     } else {
         // Update value
         entry->value = value;
     }
 
     return value;
-}
-
-int table_is_full(struct hash_table *table) {
-    return table->effective_size == table->entry_counter;
 }
 
 int compare_key(struct table_key * first, struct table_key * second) {
@@ -212,7 +203,6 @@ struct hash_table *create(int size) {
 
     hash_table->size = array_size;
     hash_table->effective_size = size;
-    hash_table->entry_counter = 0;
 
     for (i = 0; i < hash_table->size; i++)
         hash_table->table[i] = NULL;

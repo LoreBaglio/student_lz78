@@ -48,6 +48,6 @@ int insert_header(const char* filename, int dictionary_size, FILE* fp, struct fi
 void read_header(FILE*, struct file_header*);
 crc crc32b(uint8_t const *, int);
 void step_crc(crc* , char);
-int check_size(FILE* compressed_file, int original_size, int header_size);
+uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size);
 
 #endif //STUDENT_LZ78_FILE_IO_H
