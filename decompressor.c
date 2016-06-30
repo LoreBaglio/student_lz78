@@ -307,7 +307,7 @@ void emit_string(FILE *out, struct elem* dictionary, struct stack* s, node index
 	// Ciclo di estrazione (non vorrei aver esagerato con l'ottimizzazione)
 	for (i = 1; i < len; i++) {
 		extracted_c = stack_pop(s);
-		step_crc(remainder, *parent);
+		step_crc(remainder, extracted_c);
 		write_data(&extracted_c, 1, 1, out);
 	}
 
