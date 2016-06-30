@@ -105,7 +105,7 @@ int read_code(struct bitio* b, int size, uint64_t* my_data){
 	}
 	else{
 		*my_data = (b->data >> b->rp);
-		ret = fread((void*)&b->data, 8, 1, b->f);
+		ret = fread((void*)&b->data, 1, 8, b->f);
 		if(ret < 0){
 			errno = ENODATA;
 			return -1;
