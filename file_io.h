@@ -23,6 +23,8 @@ typedef uint32_t crc;
 #define WIDTH  (8 * sizeof(crc))
 #define TOPBIT (1 << (WIDTH - 1))
 #define POLYNOMIAL 0xD8  /* 11011 followed by 0's */
+#define MIN_DICTIONARY_SIZE 256
+#define MAX_DICTIONARY_SIZE 65536
 
 
 struct file_header {
@@ -35,7 +37,8 @@ struct file_header {
     off_t file_size;
     time_t last_modification_time;
     int32_t checksum;
-
+    //TODO decidere bit compressed
+    //uint8_t compressed;
 };
 
 void get_header(const char*, struct file_header*,int);
@@ -49,5 +52,7 @@ void read_header(FILE*, struct file_header*);
 crc crc32b(uint8_t const *, int);
 void step_crc(crc* , char);
 uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size);
+//int check_header(struct file_header*);
+void check_decompression(FILE* fp, int original_size);
 
 #endif //STUDENT_LZ78_FILE_IO_H

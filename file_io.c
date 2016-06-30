@@ -11,7 +11,7 @@ void print_header(struct file_header* header){
     printf("File Size: %d\n",(int)header->file_size);
     printf("Last Modification: %s",ctime(&header->last_modification_time));
     printf("Checksum: %d\n",header->checksum);
-
+    //printf("Compressed: %d\n", header->compressed);
 }
 
 void get_header(const char* filename, struct file_header* header,int dictionary_size) {
@@ -33,7 +33,7 @@ void get_header(const char* filename, struct file_header* header,int dictionary_
     header->file_size = file_stat.st_size;
     header->last_modification_time = file_stat.st_atim.tv_sec;
     header->checksum = 0;       //Checksum will be set at the end of compression
-
+    //header->compressed = 0;     //Compressed will be set at the end of compression
 }
 
 crc
@@ -153,6 +153,8 @@ void read_header(FILE* fp, struct file_header* head)
 	read_data((void*)&(head->last_modification_time), 1, sizeof(time_t), fp);
 	
 	read_data((void*)&(head->checksum), 1, sizeof(int32_t), fp);
+
+	//read_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
 }
 
 
@@ -209,6 +211,8 @@ int insert_header(const char *filename, int dictionary_size, FILE *fp, struct fi
     // CRC
     write_data((void*)&(head->checksum), 1, sizeof(int32_t), fp);
 
+    //write_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
+
     return crc_offset;
 
 }
@@ -221,12 +225,49 @@ uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
 	new_size -= header_size;
 
 	if (original_size >= new_size){
-		printf("compression finished successfully\n");
+		printf("compression finished successfully, original size was: %d new size is: %d\n", (int)original_size, new_size);
 		return 1;
 	}
 	else{
-		printf("compression finished unsuccessfully\n");
+		printf("compression finished unsuccessfully, original size was: %d new size is: %d\n", (int)original_size, new_size);
 	    return 0;
+	}
+}
+
+/*int check_header(struct file_header* head)
+{
+	time_t timestamp;
+
+	if(head->compression_algorithm_code != LZ_78_CODE){
+		printf("error: compression algorithm is not LZ78\n");
+		return -1;
+	}
+	if(head->dictionary_size < MIN_DICTIONARY_SIZE || head->dictionary_size > MAX_DICTIONARY_SIZE){
+		printf("error: data corruption\n");
+		return -1;
+	}
+	if(head->symbol_size != SYMBOL_SIZE){
+		printf("error: symbol format not valid\n");
+		return -1;
+	}
+        //controllo che l'ultima modifica sia precedente all'ora corrente
+	timestamp = time(NULL);
+	if(difftime(timestamp, head->last_modification_time) < 0){
+		printf("error: data corruption\n");
+		return -1;
+	}
+	if(head->compressed == 0){
+		return 0;
+	}
+	return 1;
+}
+*/
+void check_decompression(FILE* fp, int original_size)
+{
+	int size = (int)ftell(fp);
+
+	if(size != original_size){
+		printf("error during decompression\n");
 	}
 }
 
