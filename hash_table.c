@@ -97,10 +97,10 @@ int put(struct hash_table* hashtable, struct table_key* key, int value) {
 
 int compare_key(struct table_key * first, struct table_key * second) {
 
-    if (first->code != second-> code || first->father != second->father)
-        return 0;
-    else
+    if (first->code == second->code && first->father == second->father)
         return 1;
+    else
+        return 0;
 }
 
 struct entry_table* lookup(struct hash_table * hashtable, struct table_key * key) {
@@ -129,15 +129,12 @@ void print_table(struct hash_table * hash_table) {
 
         struct entry_table *entry = hash_table->table[i];
 
-        if (entry == NULL)
-            continue;
-
         while (entry) {
 
             struct table_key *key = entry->key;
 
             int value = entry->value;
-            printf("%d) Key: %d-%c, Value: %d\n", i, key->father, key->code, value);
+            printf("%d) Key: %d-%x, Value: %d\n", i, key->father, key->code, value);
             entry = entry->next;
 
         }

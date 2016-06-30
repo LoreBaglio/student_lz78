@@ -3,6 +3,8 @@ project(student_lz78)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES lz_command.c file_io.c file_io.h compressor.c compressor.h decompressor.c decompressor.h crc32.c hash_table.c hash_table.h)
-add_executable(lz_command ${SOURCE_FILES} lz_command.c file_io.c file_io.h compressor.c compressor.h decompressor.c decompressor.h crc32.c hash_table.c hash_table.h)
+set(SOURCE_FILES lzw_codec.c compressor.c decompressor.c hash_table.c file_io.c encode.c )
+add_executable(lzw_codec ${SOURCE_FILES})
+target_link_libraries(lzw_codec m)
+
 

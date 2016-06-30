@@ -71,7 +71,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
                 exit(1);
             }*/
 
-            if(compressor->node_count != dictionary_size){
+            if(compressor->node_count < dictionary_size){
                 // Increment node_count and put as new child id
                 put(compressor -> dictionary, node_key, ++compressor->node_count);
                 // Restart from one-char node
@@ -83,10 +83,10 @@ void compress(const char * input_filename, const char* output_file_name, int dic
                 dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
 
                 // Increment node_count and put as new child id
-                put(compressor -> dictionary, node_key, ++compressor->node_count);
+                put(compressor -> dictionary, node_key, ++compressor->node_count);*/
                 // Restart from one-char node
                 node_key->father = ROOT;
-                parent_node = get(compressor->dictionary, node_key);*/
+                parent_node = get(compressor->dictionary, node_key);
             }
         }
         else {
@@ -188,7 +188,7 @@ void dictionary_init(struct compressor_data *compressor, int symbol_alphabet, in
 
         }
 
-        // print_table(compressor->dictionary);
+        //print_table(compressor->dictionary);
 
         //++compressor->node_count;   // Hopping the EOF node id
     }

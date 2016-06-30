@@ -242,25 +242,25 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
         if(index < EOF_CODE){
             extracted_parent = decompressor->dictionary[index].c;
             write_data(&extracted_parent, 1, 1, output_file);
-        }
-	else if(index > decompressor->node_count){
-		write_data(&extracted_parent, 1, 1, output_file);
+        } else if(index > decompressor->node_count){
 
-		//forse devo estrarre dalla pila
-		len = 0;
-		index = previous_node;
-            	while(decompressor->dictionary[index].parent != EOF_CODE){
-                	stack_push(s, decompressor->dictionary[index].c);
-                	index = decompressor -> dictionary[index].parent;
-                	len++;
-            	}
+			write_data(&extracted_parent, 1, 1, output_file);
 
-		for (i = 0; i < len; i++){
-			extracted_c = stack_pop(s);
-                	write_data(&extracted_c, 1, 1, output_file);
-            	}
-	}
-        else {
+			//forse devo estrarre dalla pila
+			len = 0;
+			index = previous_node;
+			while(decompressor->dictionary[index].parent != EOF_CODE){
+				stack_push(s, decompressor->dictionary[index].c);
+				index = decompressor -> dictionary[index].parent;
+				len++;
+			}
+
+			for (i = 0; i < len; i++){
+				extracted_c = stack_pop(s);
+				write_data(&extracted_c, 1, 1, output_file);
+			}
+
+		} else {
             // Ad ogni ciclo controllo che il parent non sia zero
             // In tal caso push sulla pila
 
@@ -285,13 +285,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
         }
 
         // Aggiungo nodo al dizionario
-        if (previous_node != ROOT && !end_update) {
-            /** Se vogliamo ottimizzare togliendo la variabile bisogna fare così
-             *  decompressor->dictionary[++decompressor->node_count].parent = previous_node;
-             *  decompressor->dictionary[decompressor->node_count].c = output_string[0];
-             *
-             *  (Il male secondo me)
-             */
+        if (previous_node != ROOT && decompressor -> node_count < dictionary_size) {
             new_node_count = ++decompressor->node_count;
             decompressor->dictionary[new_node_count].parent = previous_node;
             // extracted_parent "dovrebbe" puntare all'ultimo carattere estratto dalla pila
@@ -305,15 +299,12 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
         previous_node = current_node;
 
         // Dizionario pieno: svuotare tutto
-        // FIXME discuterne
-        // Secondo me non bisogna proprio fare nulla eccetto il reset del nodecount
-        // perchè il dizionario si reinizalizza da solo
-        // Sovrascrivendo i dati vecchi mano mano che si procede
-        if(decompressor -> node_count == dictionary_size){
-			/*free(decompressor->dictionary);
-           	decompressor_init(decompressor, dictionary_size, 0);
-			previous_node = ROOT;*/
-			end_update = 1;
+        if(decompressor -> node_count >= dictionary_size){
+		/*	free(decompressor->dictionary);
+           	decompressor_init(decompressor, dictionary_size, 0);*/
+			previous_node = ROOT;
+			//end_update = 1;
+
         }
 
 	}
