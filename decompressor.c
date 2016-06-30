@@ -287,7 +287,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 
 }
 
-void emit_string(FILE *out, struct elem* dictionary, struct stack* s, int index, unsigned char *parent, crc* remainder) {
+void emit_string(FILE *out, struct elem* dictionary, struct stack* s, node index, unsigned char *parent, crc* remainder) {
 
 	int len = 0,i;
 	unsigned char extracted_c;
