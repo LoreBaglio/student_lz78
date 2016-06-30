@@ -36,7 +36,7 @@ struct file_header {
     const char* filename;
     off_t file_size;
     time_t last_modification_time;
-    int32_t checksum;
+    crc checksum;
     //TODO decidere bit compressed
     //uint8_t compressed;
 };
@@ -53,6 +53,6 @@ crc crc32b(uint8_t const *, int);
 void step_crc(crc* , char);
 uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size);
 //int check_header(struct file_header*);
-void check_decompression(FILE* fp, off_t original_size);
+void check_decompression(FILE* fp, off_t original_size, crc original_crc, crc computed_crc);
 
 #endif //STUDENT_LZ78_FILE_IO_H

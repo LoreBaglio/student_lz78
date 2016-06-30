@@ -109,7 +109,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     //parent_node = EOF_CODE;
     write_data(&parent_node, 1, sizeof(int), bitio->f);
 
-    header_size = crc_header_offset + sizeof(int32_t);
+    header_size = crc_header_offset + sizeof(crc);
     is_compressed = check_size(bitio->f, head->file_size, header_size);
 
     //Attach CRC
@@ -118,7 +118,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
     /* FIXME se usiamo compressed nell'header
 
-    header_size = crc_header_offset + sizeof(int32_t) + sizeof(uint8_t);
+    header_size = crc_header_offset + sizeof(crc) + sizeof(uint8_t);
     is_compressed = check_size(bitio->f, head->file_size, header_size);
 
     //Attach CRC
@@ -126,7 +126,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     write_data(&remainder, 1, sizeof(crc), bitio->f);
 
     //Attach is_compressed
-    fseek(bitio->f, crc_header_offset + sizeof(int32_t), SEEK_SET);
+    fseek(bitio->f, crc_header_offset + sizeof(crc), SEEK_SET);
     write_data(&is_compressed, 1, sizeof(uint8_t), bitio->f);
     */
 

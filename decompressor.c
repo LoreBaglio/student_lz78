@@ -172,7 +172,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 	struct decompressor_data * decompressor = calloc(1, sizeof(struct decompressor_data));
 	struct file_header* header = calloc(1, sizeof(struct file_header));
 	uint8_t end_update = 0;
-
+	crc remainder = 0;
 	//int result;
 
 	//Init bitio
@@ -245,14 +245,14 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 				index = decompressor->node_count;
 
 
-				emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent);
+				emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
 
 
 			} else {
 				// Ad ogni ciclo controllo che il parent non sia EOF_CODE
 				// In tal caso push sulla pila
 
-				emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent);
+				emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
 
 				// Aggiungo nodo al dizionario
 				if (previous_node != ROOT && decompressor->node_count < dictionary_size)
@@ -275,7 +275,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 	}
 
     //alla fine della decompressione controllo che la dimensione del file decompresso sia uguale a quella originale
-    check_decompression(output_file, header->file_size);
+    check_decompression(output_file, header->file_size, header->checksum, remainder);
    
     bitio_close(bitio);
     fclose(output_file);
@@ -291,7 +291,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 
 }
 
-void emit_string(FILE *out, struct elem* dictionary, struct stack* s, int index, unsigned char *parent) {
+void emit_string(FILE *out, struct elem* dictionary, struct stack* s, int index, unsigned char *parent, crc* remainder) {
 
 	int len = 0,i;
 	unsigned char extracted_c;
@@ -304,12 +304,14 @@ void emit_string(FILE *out, struct elem* dictionary, struct stack* s, int index,
 	}
 
 	*parent = stack_pop(s);
+	step_crc(remainder, *parent);
 
 	write_data(parent, 1, 1, out);
 
 	// Ciclo di estrazione (non vorrei aver esagerato con l'ottimizzazione)
 	for (i = 1; i < len; i++) {
 		extracted_c = stack_pop(s);
+		step_crc(remainder, *parent);
 		write_data(&extracted_c, 1, 1, out);
 	}
 

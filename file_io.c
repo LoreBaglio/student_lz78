@@ -116,9 +116,6 @@ FILE* open_file(const char* filename, u_int mode)
 void read_data(void* dest, int n, int size, FILE* fp)
 {
 	int ret = fread(dest, size, n, fp);
-	if(feof(fp)){
-		return;
-	}
 	if (ret < n){
 		printf("read(): error in reading data\n");
 		exit(1);
@@ -152,7 +149,7 @@ void read_header(FILE* fp, struct file_header* head)
 
 	read_data((void*)&(head->last_modification_time), 1, sizeof(time_t), fp);
 	
-	read_data((void*)&(head->checksum), 1, sizeof(int32_t), fp);
+	read_data((void*)&(head->checksum), 1, sizeof(crc), fp);
 
 	//read_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
 }
@@ -209,7 +206,7 @@ int insert_header(const char *filename, int dictionary_size, FILE *fp, struct fi
     crc_offset = (int)ftell(fp);
 
     // CRC
-    write_data((void*)&(head->checksum), 1, sizeof(int32_t), fp);
+    write_data((void*)&(head->checksum), 1, sizeof(crc), fp);
 
     //write_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
 
@@ -262,12 +259,15 @@ uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
 	return 1;
 }
 */
-void check_decompression(FILE* fp, off_t original_size)
+void check_decompression(FILE* fp, off_t original_size, crc original_crc, crc computed_crc)
 {
 	off_t size = ftell(fp);
 
 	if(size != original_size){
-		printf("error during decompression\nOriginal file was %d, decompressed one is %d", original_size, size);
+		printf("error during decompression\nOriginal file was %d, decompressed one is %d", (int)original_size, (int)size);
+	}
+	if(original_crc != computed_crc){
+		printf("error during decompression\nOriginal crc was %d, computed crc is %d\n", original_crc, computed_crc);
 	}
 }
 
