@@ -73,10 +73,10 @@ int write_code(struct bitio* b, int size, uint64_t data){
 	else{
 		b->data |= data << b->wp;
 		ret = fwrite((void*)&b->data, 1, 8, b->f);
-		/*if( ret != 1){
+		if( ret != 8){
 			errno = ENOSPC;
 			return -1;
-		}*/
+		}
 		b->data = data >> space;
 		b->wp = size - space;
 	}
@@ -102,6 +102,7 @@ int read_code(struct bitio* b, int size, uint64_t* my_data){
 	if(size <= space){
 		*my_data = (b->data >> b->rp)&((1UL << size) - 1);
 		b->rp += size;
+		return size;
 	}
 	else{
 		*my_data = (b->data >> b->rp);

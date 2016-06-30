@@ -10,7 +10,7 @@
 
 struct compressor_data {
     struct hash_table * dictionary;
-    int node_count;
+    node node_count;
 };
 
 extern u_int bits_per_code;

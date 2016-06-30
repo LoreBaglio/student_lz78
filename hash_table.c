@@ -39,17 +39,22 @@ int main(){
  */
 
 
-int get(struct hash_table* hashtable, struct table_key* key) {
+node get(struct hash_table* hashtable, struct table_key* key, uint8_t* found) {
 
     struct entry_table* entry = lookup(hashtable, key);
 
-    if (entry)
+    if (entry) {
+        *found = 1;
         return entry->value;
+    }
+    else
+        *found = 0;
 
-    return NO_ENTRY_FOUND;
+    // If not found, result has no meaning
+    return 0;
 }
 
-int put(struct hash_table* hashtable, struct table_key* key, int value) {
+node put(struct hash_table* hashtable, struct table_key* key, node value) {
 
     int hash_index = hash(key, hashtable->size);
     struct entry_table* bin = hashtable->table[hash_index];

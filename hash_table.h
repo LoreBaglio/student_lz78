@@ -12,16 +12,17 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include "encode.h"
 
 
 struct table_key{
-    int father;
+    node father;
     unsigned char code;
 };
 
 struct entry_table{
     struct table_key* key;
-    int value;
+    node value;
     struct entry_table* next;
 };
 
@@ -35,8 +36,8 @@ struct hash_table{
 int hash(struct table_key*, int);
 
 struct hash_table* create(int size);
-int get(struct hash_table*, struct table_key*);
-int put(struct hash_table*, struct table_key*, int );
+node get(struct hash_table*, struct table_key*, uint8_t* found);
+node put(struct hash_table*, struct table_key*, node );
 void print_table(struct hash_table*);
 void destroy(struct hash_table *);
 
