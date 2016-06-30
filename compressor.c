@@ -22,6 +22,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     int header_size;
     struct file_header* head = (struct file_header*)malloc(sizeof(struct file_header));
     uint8_t end_update = 0;
+    //int end = 0;
 
     // Prepare all characters as first children of the root of the tree
     dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
@@ -48,9 +49,17 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     //write_code(bitio,1,1);
 
     while(!feof(input_fp)) {
+    
+    //while(!end){
 
         // Read a char (Read operation is buffered inside)
         fread(&current_symbol, 1, 1, input_fp);
+
+       // if(feof(input_fp)){
+       //       current_symbol = 3;
+       //	end = 1;
+       // }
+
         // Incremental CRC, computed during the compression cycle and attached to the header at the end
         step_crc(&remainder, current_symbol);
 
