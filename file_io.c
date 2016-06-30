@@ -262,12 +262,12 @@ uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
 	return 1;
 }
 */
-void check_decompression(FILE* fp, int original_size)
+void check_decompression(FILE* fp, off_t original_size)
 {
-	int size = (int)ftell(fp);
+	off_t size = ftell(fp);
 
 	if(size != original_size){
-		printf("error during decompression\n");
+		printf("error during decompression\nOriginal file was %d, decompressed one is %d", original_size, size);
 	}
 }
 

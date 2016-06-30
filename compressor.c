@@ -4,23 +4,23 @@
 
 void compress(const char * input_filename, const char* output_file_name, int dictionary_size) {
 
-    struct compressor_data * compressor = malloc(sizeof(struct compressor_data));
+    struct compressor_data *compressor = malloc(sizeof(struct compressor_data));
 
-    FILE* input_fp;
+    FILE *input_fp;
 
     // Variables for each step of lookup
     int parent_node = ROOT;
     unsigned char current_symbol;
-    struct table_key * node_key;
+    struct table_key *node_key;
     int child_node = 0;
     crc remainder = 0;
-    struct bitio* bitio;
+    struct bitio *bitio;
     int crc_header_offset = 0;
     int ret;
     uint8_t is_compressed;
     uint64_t tmp;
     int header_size;
-    struct file_header* head = (struct file_header*)malloc(sizeof(struct file_header));
+    struct file_header *head = (struct file_header *) malloc(sizeof(struct file_header));
     uint8_t end_update = 0;
     //int end = 0;
 
@@ -28,15 +28,15 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
 
     //Init bitio
-    bitio = bitio_open(output_file_name,WRITE);
-    if (bitio == NULL){
+    bitio = bitio_open(output_file_name, WRITE);
+    if (bitio == NULL) {
         printf("Cannot open file %s in write mode\n", output_file_name);
         exit(1);
     }
 
     input_fp = open_file(input_filename, READ);
 
-    if (input_fp == NULL){
+    if (input_fp == NULL) {
         printf("Cannot open file %s in read mode\n", input_filename);
         exit(1);
     }
@@ -48,62 +48,66 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     // reset the flag at the end
     //write_code(bitio,1,1);
 
-    while(!feof(input_fp)) {
-    
-    //while(!end){
+    while (!feof(input_fp)) {
+
+        //while(!end){
 
         // Read a char (Read operation is buffered inside)
-        fread(&current_symbol, 1, 1, input_fp);
+        if (fread(&current_symbol, 1, 1, input_fp) != 0) {
 
-       // if(feof(input_fp)){
-       //       current_symbol = 3;
-       //	end = 1;
-       // }
+            // if(feof(input_fp)){
+            //       current_symbol = 3;
+            //	end = 1;
+            // }
 
-        // Incremental CRC, computed during the compression cycle and attached to the header at the end
-        step_crc(&remainder, current_symbol);
+            // Incremental CRC, computed during the compression cycle and attached to the header at the end
+            step_crc(&remainder, current_symbol);
 
-        //Prepare key for lookup
-        node_key->code = current_symbol;
-        node_key->father = parent_node;
+            //Prepare key for lookup
+            node_key->code = current_symbol;
+            node_key->father = parent_node;
 
-        // Dictionary lookup
-        child_node = get(compressor->dictionary, node_key);
-        if (child_node == NO_ENTRY_FOUND) {
+            // Dictionary lookup
+            child_node = get(compressor->dictionary, node_key);
+            if (child_node == NO_ENTRY_FOUND) {
 
-            //Parent node code emission
-            //ret = write_code(bitio, bits_per_code, parent_node);
-            write_data(&parent_node, 1, sizeof(int), bitio->f);
+                //Parent node code emission
+                //ret = write_code(bitio, bits_per_code, parent_node);
+                write_data(&parent_node, 1, sizeof(int), bitio->f);
 
-            /*if (ret < 0){
-                printf("Error when writing to file %s\n", output_file_name);
-                exit(1);
-            }*/
+                /*if (ret < 0){
+                    printf("Error when writing to file %s\n", output_file_name);
+                    exit(1);
+                }*/
 
-            if(compressor->node_count < dictionary_size){
-                // Increment node_count and put as new child id
-                put(compressor -> dictionary, node_key, ++compressor->node_count);
-                // Restart from one-char node
-                node_key->father = ROOT;
-                parent_node = get(compressor->dictionary, node_key);
+                if (compressor->node_count < dictionary_size) {
+                    // Increment node_count and put as new child id
+                    put(compressor->dictionary, node_key, ++compressor->node_count);
+                    // Restart from one-char node
+                    node_key->father = ROOT;
+                    parent_node = get(compressor->dictionary, node_key);
+                }
+                else {
+                    /*destroy(compressor->dictionary);
+                    dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
+
+                    // Increment node_count and put as new child id
+                    put(compressor -> dictionary, node_key, ++compressor->node_count);*/
+                    // Restart from one-char node
+                    node_key->father = ROOT;
+                    parent_node = get(compressor->dictionary, node_key);
+                }
             }
             else {
-                /*destroy(compressor->dictionary);
-                dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
-
-                // Increment node_count and put as new child id
-                put(compressor -> dictionary, node_key, ++compressor->node_count);*/
-                // Restart from one-char node
-                node_key->father = ROOT;
-                parent_node = get(compressor->dictionary, node_key);
+                parent_node = child_node;
             }
-        }
-        else {
-            parent_node = child_node;
-        }
 
+        }
     }
 
+    // EOF_CODE
+    //parent_node = EOF_CODE;
+    write_data(&parent_node, 1, sizeof(int), bitio->f);
 
     header_size = crc_header_offset + sizeof(int32_t);
     is_compressed = check_size(bitio->f, head->file_size, header_size);
@@ -203,5 +207,4 @@ void dictionary_init(struct compressor_data *compressor, int symbol_alphabet, in
     }
 
 }
-
 

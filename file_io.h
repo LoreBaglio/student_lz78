@@ -53,6 +53,6 @@ crc crc32b(uint8_t const *, int);
 void step_crc(crc* , char);
 uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size);
 //int check_header(struct file_header*);
-void check_decompression(FILE* fp, int original_size);
+void check_decompression(FILE* fp, off_t original_size);
 
 #endif //STUDENT_LZ78_FILE_IO_H

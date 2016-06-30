@@ -85,8 +85,6 @@ int main (int argc, char **argv)
   for (index = optind; index < argc; index++)
     printf ("Non-option argument %s\n", argv[index]);
 
-  //TODO Scegliere se l'opzione -l è obbligatoria
-
   if (compressor_flag && decompressor_flag) {
     printf("You cannot compress and decompress at the same time!\n");
     exit(1);
@@ -154,7 +152,6 @@ int main (int argc, char **argv)
 	  printf("You cannot specify the dictionary size during the decompression phase: it will be ignored.\n");
       }
 
-    // FIXME Ignoriamo il dictionary size in decompressione? tanto è scritto nell'header
     decompress_LZW(input_value, output_value);
 
     } else {

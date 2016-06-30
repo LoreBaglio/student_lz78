@@ -211,103 +211,69 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
     stack_init(s, dictionary_size);
 
     decompressor_init(decompressor, dictionary_size, 0);
+	new_node_count = decompressor->node_count;
 
 	// Set encoding number of bits and eof code
 	bits_per_code = compute_bit_to_represent(dictionary_size);
 
 
-	while(1){
+	while(!feof(bitio->f)){
 
 //		ret = read_code(bitio, bits_per_code, &current_node);
 		/*if(ret != bits_per_code){
 		    printf("Error: corrupted code");        //Fixme è corretto questo check?
 		    exit(1);
 		}*/
-		read_data(&current_node, 1, sizeof(int), bitio->f);
+		if (fread(&current_node, sizeof(int), 1 , bitio->f) != 0) {
 
-		//controllo se non ho letto EOF     //FIXME decidere definitivamente se usare nodo EOF o semplicemente feof
-		if(feof(bitio->f)){
-			printf("Decompression finished\n");
-			break;
+			//controllo se non ho letto EOF     //FIXME decidere definitivamente se usare nodo EOF o semplicemente feof
+			/*if (current_node == EOF_CODE) {
+				printf("Decompression finished\n");
+				break;
+			}*/
+
+			index = current_node;
+
+
+			//Check if the index is in the dictionary
+			if (index > decompressor->node_count) {
+
+				// Aggiungo nodo al dizionario
+				if (previous_node != ROOT && decompressor->node_count < dictionary_size)
+					add_node(decompressor, previous_node, extracted_parent);
+
+				index = decompressor->node_count;
+
+
+				emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent);
+
+
+			} else {
+				// Ad ogni ciclo controllo che il parent non sia EOF_CODE
+				// In tal caso push sulla pila
+
+				emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent);
+
+				// Aggiungo nodo al dizionario
+				if (previous_node != ROOT && decompressor->node_count < dictionary_size)
+					add_node(decompressor, previous_node, extracted_parent);
+
+			}
+
+			// Imposto il nodo ricevuto come prossimo nodo al quale aggiungeremo il figlio
+			previous_node = current_node;
+
+			// Dizionario pieno: svuotare tutto
+			if (decompressor->node_count >= dictionary_size) {
+				/*	free(decompressor->dictionary);
+                decompressor_init(decompressor, dictionary_size, 0);*/
+				previous_node = ROOT;
+				//end_update = 1;
+
+			}
 		}
-
-		index = current_node;
-		
-
-		if (index == EOF_CODE)
-			break;
-
-
-        //Check if it's not a sequence, but a single char
-        if(index < EOF_CODE){
-            extracted_parent = decompressor->dictionary[index].c;
-            write_data(&extracted_parent, 1, 1, output_file);
-        } else if(index > decompressor->node_count){
-
-			write_data(&extracted_parent, 1, 1, output_file);
-
-			//forse devo estrarre dalla pila
-			len = 0;
-			index = previous_node;
-			while(decompressor->dictionary[index].parent != EOF_CODE){
-				stack_push(s, decompressor->dictionary[index].c);
-				index = decompressor -> dictionary[index].parent;
-				len++;
-			}
-
-			for (i = 0; i < len; i++){
-				extracted_c = stack_pop(s);
-				write_data(&extracted_c, 1, 1, output_file);
-			}
-
-		} else {
-            // Ad ogni ciclo controllo che il parent non sia zero
-            // In tal caso push sulla pila
-
-            len = 0;
-            while(decompressor->dictionary[index].parent != EOF_CODE){
-                stack_push(s, decompressor->dictionary[index].c);
-                index = decompressor -> dictionary[index].parent;
-                len++;
-            }
-
-            extracted_parent = stack_pop(s);
-
-            write_data(&extracted_parent, 1, 1, output_file);
-
-            // Ciclo di estrazione (non vorrei aver esagerato con l'ottimizzazione)
-            for (i = 1; i < len; i++){
-                extracted_c = stack_pop(s);
-                write_data(&extracted_c, 1, 1, output_file);
-            }
-
-
-        }
-
-        // Aggiungo nodo al dizionario
-        if (previous_node != ROOT && decompressor -> node_count < dictionary_size) {
-            new_node_count = ++decompressor->node_count;
-            decompressor->dictionary[new_node_count].parent = previous_node;
-            // extracted_parent "dovrebbe" puntare all'ultimo carattere estratto dalla pila
-            // quindi al carattere giusto da aggiungere come ultimo figlio letto
-            // (primo nella sequenza di pop)
-            decompressor->dictionary[new_node_count].c = extracted_parent;
-
-        }
-
-        // Imposto il nodo ricevuto come prossimo nodo al quale aggiungeremo il figlio
-        previous_node = current_node;
-
-        // Dizionario pieno: svuotare tutto
-        if(decompressor -> node_count >= dictionary_size){
-		/*	free(decompressor->dictionary);
-           	decompressor_init(decompressor, dictionary_size, 0);*/
-			previous_node = ROOT;
-			//end_update = 1;
-
-        }
-
 	}
+
     //alla fine della decompressione controllo che la dimensione del file decompresso sia uguale a quella originale
     check_decompression(output_file, header->file_size);
    
@@ -324,6 +290,45 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
     free(header);
 
 }
+
+void emit_string(FILE *out, struct elem* dictionary, struct stack* s, int index, unsigned char *parent) {
+
+	int len = 0,i;
+	unsigned char extracted_c;
+
+
+	while (dictionary[index].parent != EOF_CODE) {
+		stack_push(s, dictionary[index].c);
+		index = dictionary[index].parent;
+		len++;
+	}
+
+	*parent = stack_pop(s);
+
+	write_data(parent, 1, 1, out);
+
+	// Ciclo di estrazione (non vorrei aver esagerato con l'ottimizzazione)
+	for (i = 1; i < len; i++) {
+		extracted_c = stack_pop(s);
+		write_data(&extracted_c, 1, 1, out);
+	}
+
+}
+
+void add_node(struct decompressor_data *decompressor, int previous_node, unsigned char extracted_parent) {
+
+	int new_node_count = ++decompressor->node_count;
+	decompressor->dictionary[new_node_count].parent = previous_node;
+	// extracted_parent "dovrebbe" puntare all'ultimo carattere estratto dalla pila
+	// quindi al carattere giusto da aggiungere come ultimo figlio letto
+	// (primo nella sequenza di pop)
+	decompressor->dictionary[new_node_count].c = extracted_parent;
+
+}
+
+
+
+
 
 
 
