@@ -40,12 +40,13 @@ crc
 crc32b(uint8_t const message[], int nBytes)
 {
     crc  remainder = 0;
-
+	int byte;
+	uint8_t bit;
 
     /*
      * Perform modulo-2 division, a byte at a time.
      */
-    for (int byte = 0; byte < nBytes; ++byte)
+    for (byte = 0; byte < nBytes; ++byte)
     {
         /*
          * Bring the next byte into the remainder.
@@ -55,7 +56,7 @@ crc32b(uint8_t const message[], int nBytes)
         /*
          * Perform modulo-2 division, a bit at a time.
          */
-        for (uint8_t bit = 8; bit > 0; --bit)
+        for (bit = 8; bit > 0; --bit)
         {
             /*
              * Try to divide the current data bit.
@@ -157,6 +158,7 @@ void read_header(FILE* fp, struct file_header* head)
 
 void step_crc(crc* remainder, char c) {
 
+	uint8_t bit;
     /*
          * Bring the next byte into the remainder.
          */
@@ -165,7 +167,7 @@ void step_crc(crc* remainder, char c) {
     /*
      * Perform modulo-2 division, a bit at a time.
      */
-    for (uint8_t bit = 8; bit > 0; --bit)
+    for (bit = 8; bit > 0; --bit)
     {
         /*
          * Try to divide the current data bit.

@@ -156,6 +156,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     destroy(compressor->dictionary);
     free(compressor);
 
+    free(node_key);
+    free(head);
+
 }
 
 /**
