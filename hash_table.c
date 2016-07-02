@@ -65,8 +65,6 @@ node put(struct hash_table* hashtable, struct table_key* key, node value) {
     // No element with this key
     if (entry == NULL){
 
-        entry = calloc(1, sizeof(struct entry_table));
-
         // Primo inserimento
         if (bin == NULL){
             bin = calloc(1, sizeof(struct entry_table));
@@ -81,6 +79,7 @@ node put(struct hash_table* hashtable, struct table_key* key, node value) {
         }
         else {
 
+            entry = calloc(1, sizeof(struct entry_table));
             entry->key = calloc(1, sizeof(struct table_key));
             entry->key->father = key->father;
             entry->key->code = key->code;
@@ -243,6 +242,8 @@ void destroy(struct hash_table *hash_table) {
         }
 
     }
+
+    free(hash_table->table);
 
     free(hash_table);
 
