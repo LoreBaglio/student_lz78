@@ -159,6 +159,7 @@ void decompress_LZ78(const char *input_filename, const char *output_file_name, i
 void decompress_LZW(const char *input_filename, const char *output_file_name) {
 
 	FILE* output_file;
+    int stop = 0;
     unsigned char extracted_parent = 0, extracted_c;
 	node current_node, previous_node = ROOT;
 	node index = 0;
@@ -213,9 +214,10 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 	bits_per_code = compute_bit_to_represent(dictionary_size);
 
 
-	while(!feof(bitio->f)){
+	while(!feof(bitio->f) || (stop != 0)){
 
 		ret = read_code(bitio, bits_per_code, &current_node);
+		stop = ret;
 		if(ret < 0){
 		    printf("Error: corrupted code");        //Fixme è corretto questo check?
 		    exit(1);
