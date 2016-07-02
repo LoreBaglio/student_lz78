@@ -71,7 +71,8 @@ int write_code(struct bitio* b, int size, uint64_t data){
 		b->wp += size;
 	}
 	else{
-		b->data |= data << b->wp;
+        // altrimenti se è 64 il compilatore ignora lo shift in quanto è uno shift rotante, i bit non vengono persi
+		if(b->wp < 64) b->data |= data << b->wp;
 		ret = fwrite((void*)&b->data, 1, 8, b->f);
 		if( ret != 8){
 			errno = ENOSPC;
@@ -105,7 +106,8 @@ int read_code(struct bitio* b, int size, uint64_t* my_data){
 		return size;
 	}
 	else{
-		*my_data = (b->data >> b->rp);
+	    // altrimenti se è 64 il compilatore ignora lo shift in quanto è uno shift rotante, i bit non vengono persi
+		if(b->rp < 64) *my_data = (b->data >> b->rp);
 		ret = fread((void*)&b->data, 1, 8, b->f);
 		if(ret < 0){
 			errno = ENODATA;
