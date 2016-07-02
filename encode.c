@@ -128,7 +128,9 @@ int read_code(struct bitio* b, int size, uint64_t* my_data){
 }
 
 u_int compute_bit_to_represent(int arg){
+    
     return (u_int) ceil(log(arg) / log(2));
+   
 }
 
 int end_compressed_file(){
