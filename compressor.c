@@ -104,15 +104,16 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     // EOF_CODE
     //parent_node = EOF_CODE;
     //write_data(&parent_node, 1, sizeof(int), bitio->f);
+    write_code(bitio,bits_per_code, parent_node);
     parent_node = EOF_CODE;
     write_code(bitio, bits_per_code, parent_node);
 
     header_size = crc_header_offset + sizeof(crc);
     is_compressed = check_size(bitio->f, head->file_size, header_size);
 
-    //Attach CRC
-    fseek(bitio->f, crc_header_offset, SEEK_SET);
-    fwrite(&remainder,sizeof(crc),1,bitio->f);
+    //Attach CRC FIXME L'ho rimosso per far funzionare la compressione. Poi sistemiamo
+    //fseek(bitio->f, crc_header_offset, SEEK_SET);
+    //fwrite(&remainder,sizeof(crc),1,bitio->f);
 
     /* FIXME se usiamo compressed nell'header
 
