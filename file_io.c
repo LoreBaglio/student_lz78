@@ -151,7 +151,7 @@ void read_header(FILE* fp, struct file_header* head)
 	read_data((void*)&(head->last_modification_time), 1, sizeof(time_t), fp);
 	
 	read_data((void*)&(head->checksum), 1, sizeof(crc), fp);
-
+	
 	//read_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
 }
 
@@ -205,10 +205,11 @@ int insert_header(const char *filename, int dictionary_size, FILE *fp, struct fi
 
     write_data((void*)&(head->last_modification_time), 1, sizeof(time_t), fp);
 
-    crc_offset = (int)ftell(fp);
+    crc_offset = ftell(fp);
 
     // CRC
     write_data((void*)&(head->checksum), 1, sizeof(crc), fp);
+    
 
     //write_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
 
@@ -220,7 +221,7 @@ uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
 {
 	int new_size;
 
-   	new_size = (int)ftell(compressed_file);
+   	new_size = ftell(compressed_file);
 	new_size -= header_size;
 
 	if (original_size >= new_size){

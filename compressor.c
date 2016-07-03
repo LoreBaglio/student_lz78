@@ -112,8 +112,8 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     is_compressed = check_size(bitio->f, head->file_size, header_size);
 
     //Attach CRC FIXME L'ho rimosso per far funzionare la compressione. Poi sistemiamo
-    //fseek(bitio->f, crc_header_offset, SEEK_SET);
-    //fwrite(&remainder,sizeof(crc),1,bitio->f);
+    fseek(bitio->f, crc_header_offset, SEEK_SET);
+    fwrite(&remainder,sizeof(crc),1,bitio->f);
 
     /* FIXME se usiamo compressed nell'header
 
@@ -151,6 +151,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     //Attach CRC here or after?
 
     //end_compressed_file();
+    fseek(bitio->f, 0, SEEK_END);
     bitio_close(bitio);
     fclose(input_fp);
 
