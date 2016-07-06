@@ -1,10 +1,6 @@
 
 #include "encode.h"
 
-//TODO controllare gestione errori
-//TODO controllare le fread e fwrite
-
-
 struct bitio* bitio_open(const char* filename, u_int mode)
 {
 	struct bitio* b;
@@ -96,8 +92,8 @@ int read_code(struct bitio* b, int size, uint64_t* my_data){
 		return -1;
 	}
 	if(size == 0){
-    	return 0;
-    }
+    		return 0;
+    	}
 	*my_data = 0;
 	space = b->wp - b->rp;
 	if(size <= space){

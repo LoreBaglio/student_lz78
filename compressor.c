@@ -22,7 +22,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     int header_size;
     struct file_header *head = (struct file_header *) malloc(sizeof(struct file_header));
     uint8_t end_update = 0;
-    //int end = 0;
+    
 
     // Prepare all characters as first children of the root of the tree
     dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
@@ -49,8 +49,6 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     //write_code(bitio,1,1);
 
     while (!feof(input_fp)) {
-
-        //while(!end){
 
         // Read a char (Read operation is buffered inside)
         if (fread(&current_symbol, 1, 1, input_fp) != 0) {
@@ -147,8 +145,6 @@ void compress(const char * input_filename, const char* output_file_name, int dic
         fwrite(&tmp, 1, size_bitio_block, bitio->f);
 
     }*/
-
-    //Attach CRC here or after?
 
     //end_compressed_file();
     fseek(bitio->f, 0, SEEK_END);

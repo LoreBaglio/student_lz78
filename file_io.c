@@ -10,7 +10,7 @@ void print_header(struct file_header* header){
     printf("File Name: %s\n",header->filename);
     printf("File Size: %d\n",(int)header->file_size);
     printf("Last Modification: %s",ctime(&header->last_modification_time));
-    printf("Checksum: %d\n",header->checksum);
+    printf("Checksum: %u\n",header->checksum);
     //printf("Compressed: %d\n", header->compressed);
 }
 
@@ -267,61 +267,17 @@ void check_decompression(FILE* fp, off_t original_size, crc original_crc, crc co
 	off_t size = ftell(fp);
 
 	if(size != original_size){
-		printf("error during decompression\nOriginal file was %d, decompressed one is %d", (int)original_size, (int)size);
+		printf("error during decompression\nOriginal file was %d, decompressed one is %d\n", (int)original_size, (int)size);
 	}
 	if(original_crc != computed_crc){
-		printf("error during decompression\nOriginal crc was %d, computed crc is %d\n", original_crc, computed_crc);
+		printf("error during decompression\nOriginal crc was %u, computed crc is %u\n", original_crc, computed_crc);
 	}
 }
 
-/*void insert_header(const char* filename, int dictionary_size)
-{
-	FILE* fp;
-	struct file_header* head;
-	void* text;
-	int size = 0;
-	
-	head = (struct file_header*)malloc(sizeof(struct file_header));
-	get_header(filename, head, dictionary_size);
-	
-	size = head->file_size;
-	text = malloc(size);
 
-	fp = open_file(filename, READ);
-	read_data(text, 1, head->file_size, fp);
-	fclose(fp);
-		
-	fp = open_file(filename, WRITE);
 
-	size = sizeof(int8_t);
-	write_data((void*)&(head->compression_algorithm_code), 1, size, fp);
 
-	size = sizeof(int32_t);
-	write_data((void*)&(head->dictionary_size), 1, size, fp);
 
-	size = sizeof(int32_t);
-	write_data((void*)&(head->symbol_size), 1, size, fp);
-	
-	size = sizeof(int32_t);
-	write_data((void*)&(head->filename_len), 1, size, fp);
-	
-	size = head->filename_len;
-	write_data((void*)(head->filename), 1, size, fp);
-
-	size = sizeof(off_t);
-	write_data((void*)&(head->file_size), 1, size, fp);
-
-	size = sizeof(time_t);
-	write_data((void*)&(head->last_modification_time), 1, size, fp);
-	
-	size = sizeof(int32_t);
-	write_data((void*)&(head->checksum), 1, size, fp);
-
-	size =  head->file_size;
-	write_data(text, 1, size, fp);
-
-	fclose(fp);
-}*/
 
 
 

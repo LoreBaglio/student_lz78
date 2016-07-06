@@ -6,17 +6,18 @@
 
 
 void decompressor_init(struct decompressor_data *decompressor, int dictionary_size, uint8_t already_init) {
-	unsigned char c = 0;
+
+    unsigned char c = 0;
     uint16_t k;
-	uint8_t end_loop = 0;
+    uint8_t end_loop = 0;
 
     // Start to count new nodes from EOF (excluded) (0 root, 1-256 first children, 257 EOF)
     decompressor -> node_count = EOF_CODE;
 
-	if (already_init == 0)
-		decompressor->dictionary = (struct elem *) calloc(dictionary_size, sizeof(struct elem));
-	else
-		memset(decompressor->dictionary, 0,  dictionary_size * sizeof(struct elem));
+    if (already_init == 0)
+	decompressor->dictionary = (struct elem *) calloc(dictionary_size, sizeof(struct elem));
+    else
+	memset(decompressor->dictionary, 0,  dictionary_size * sizeof(struct elem));
 
     //inizializzo il nodo radice
     decompressor->dictionary[0].c = '\0';
@@ -31,7 +32,7 @@ void decompressor_init(struct decompressor_data *decompressor, int dictionary_si
 		if (c == 255)
 			end_loop = 1;
 		else
-        	c++;
+        		c++;
     }
 }
 
@@ -42,9 +43,9 @@ void decompressor_init(struct decompressor_data *decompressor, int dictionary_si
 int stack_push(struct stack* s, unsigned char const c) {
 
     if (s->top == s->size - 1){
-		printf("Stack is full\n");
-		exit(1);
-	}
+	printf("Stack is full\n");
+	exit(1);
+    }
 
     s->stk[++s->top] = c;
 
@@ -66,142 +67,61 @@ void stack_init(struct stack* s, int size) {
 unsigned char stack_pop(struct stack* s) {
 
     if (s->top == -1) {
-		printf("Stack is empty\n");
-		exit(1);
-	}
+	printf("Stack is empty\n");
+	exit(1);
+    }
 
     return s->stk[s->top--];
 }
 
-void decompress_LZ78(const char *input_filename, const char *output_file_name, int dictionary_size)
-{
-	FILE* input_file;
-	FILE* output_file;
-	char* output_string;
-	char received_c;
-	int received_parent;
-	int index = 0;
-	int i = 0;
-	int j;
-	int len = 0;
-	int offset;
-	struct decompressor_data * decompressor = malloc(sizeof(struct decompressor_data));
-	struct file_header* head = (struct file_header*)malloc(sizeof(struct file_header));
-
-	decompressor -> node_count = 1;
-	decompressor -> dictionary = (struct elem*)calloc(dictionary_size, sizeof(struct elem));
-
-	//inizializzo il nodo radice
-	decompressor -> dictionary[0].c = '0';
-	decompressor -> dictionary[0].parent = 0;
-
-	input_file = open_file(input_filename, READ);
-	output_file = open_file(output_file_name, WRITE);
-
-	// Set encoding number of bits and eof code
-	bits_per_code = compute_bit_to_represent(dictionary_size);
-
-	read_header(input_file, head);
-
-
-	while(1){
-
-		//decompressore legge la coppia <numero nodo corrente, carattere>
-
-		read_data((void*)&(received_parent), 1, sizeof(int), input_file);
-
-		//controllo se non ho letto EOF
-		if(feof(input_file)){
-			fclose(input_file);
-			fclose(output_file);
-			printf("decompression finished\n");
-			break;
-		}
-
-		read_data((void*)&(received_c), 1, sizeof(char), input_file);
-
-		decompressor -> dictionary[decompressor -> node_count].parent = received_parent;
-		decompressor -> dictionary[decompressor -> node_count].c = received_c;
-
-		//codice non ottimizzato ciclo due volte
-		index = decompressor -> dictionary[decompressor -> node_count].parent;
-		len++;
-		while(index != 0){
-			i = index;
-			index = decompressor -> dictionary[i].parent;
-			len++;
-		}
-
-		output_string = (char*)malloc(len);
-		index = decompressor -> dictionary[decompressor -> node_count].parent;
-		output_string[len - 1] = decompressor -> dictionary[decompressor -> node_count].c;
-		j = 1;
-		while(index != 0){
-			output_string[len - 1 - j] = decompressor -> dictionary[index].c;
-			i = index;
-			index = decompressor -> dictionary[i].parent;
-			j++;
-		}
-
-		write_data((void*)output_string, 1, len, output_file);
-
-		len = 0;
-		free(output_string);
-		decompressor -> node_count++;
-
-		if(decompressor -> node_count == dictionary_size){
-			//TODO
-		}
-
-	}
-}
 
 void decompress_LZW(const char *input_filename, const char *output_file_name) {
 
-	FILE* output_file;
+    FILE* output_file;
     int stop = 0;
     unsigned char extracted_parent = 0, extracted_c;
-	node current_node, previous_node = ROOT;
-	node index = 0;
-	int ret;
+    node current_node, previous_node = ROOT;
+    node index = 0;
+    int ret;
     int32_t dictionary_size;
     uint64_t is_compressed;
     struct bitio* bitio;
-	struct decompressor_data * decompressor = calloc(1, sizeof(struct decompressor_data));
-	struct file_header* header = calloc(1, sizeof(struct file_header));
-	uint8_t end_update = 0;
-	crc remainder = 0;
-	//int result;
+    struct decompressor_data * decompressor = calloc(1, sizeof(struct decompressor_data));
+    struct file_header* header = calloc(1, sizeof(struct file_header));
+    uint8_t end_update = 0;
+    crc remainder = 0;
+    //int result;
 
-	//Init bitio
-	bitio = bitio_open(input_filename,READ);
-	if (bitio == NULL){
-		printf("Cannot open input file %s\n", input_filename);
-		exit(1);
-	}
+    //Init bitio
+    bitio = bitio_open(input_filename,READ);
+    if (bitio == NULL){
+        printf("Cannot open input file %s\n", input_filename);
+	exit(1);
+    }
 
-   	output_file = open_file(output_file_name, WRITE);
+    output_file = open_file(output_file_name, WRITE);
 
-   	read_header(bitio->f, header);
+    read_header(bitio->f, header);
 
-   	//read_code(bitio,1,&is_compressed);
+  //read_code(bitio,1,&is_compressed);
 
-   	/*if(is_compressed == 0){
-   	    // FIXME don't decompress
-   	}*/
+  /*
+    if(is_compressed == 0){
+   	   // FIXME don't decompress
+    }*/
 
-        /*FIXME se usiamo compressed nell'header
+  /*FIXME se usiamo compressed nell'header
 
-        result = check_header(header);
-	if(result == -1){
-		//error
-	}
-	if(result == 0){
-		//don't decompress
-	}
-        */
+    result = check_header(header);
+    if(result == -1){
+	//error
+    }
+    if(result == 0){
+	//don't decompress
+    }
+   */
 
-   	// Get the dictionary size from the header of the compressed file
+    // Get the dictionary size from the header of the compressed file
     dictionary_size = header -> dictionary_size;
 
     //inizializzo la pila per la decompressione
@@ -210,67 +130,66 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 
     decompressor_init(decompressor, dictionary_size, 0);
 
-	// Set encoding number of bits and eof code
-	bits_per_code = compute_bit_to_represent(dictionary_size);
+    // Set encoding number of bits and eof code
+    bits_per_code = compute_bit_to_represent(dictionary_size);
 
 
-	while(!feof(bitio->f) || (stop != 0)){
+    while(!feof(bitio->f) || (stop != 0)){
 
-		ret = read_code(bitio, bits_per_code, &current_node);
-		stop = ret;
-		if(ret < 0){
-		    printf("Error: corrupted code");        //Fixme è corretto questo check?
-		    exit(1);
-		}
+	ret = read_code(bitio, bits_per_code, &current_node);
+	stop = ret;
+	if(ret < 0){
+	    printf("Error: corrupted code");        //Fixme è corretto questo check?
+	    exit(1);
+	}
 
+	//controllo se non ho letto EOF     //FIXME decidere definitivamente se usare nodo EOF o semplicemente feof
+	if (current_node == EOF_CODE) {
+	    printf("Decompression finished\n");
+	    break;
+	}
 
-		//controllo se non ho letto EOF     //FIXME decidere definitivamente se usare nodo EOF o semplicemente feof
-		if (current_node == EOF_CODE) {
-				printf("Decompression finished\n");
-				break;
-		}
-
-		index = current_node;
-
-
-		//Check if the index is in the dictionary
-		if (index > decompressor->node_count) {
-
-			// Aggiungo nodo al dizionario
-			if (previous_node != ROOT && decompressor->node_count < dictionary_size)
-				add_node(decompressor, previous_node, extracted_parent);
-
-			index = decompressor->node_count;
+	index = current_node;
 
 
-				emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
+	//Check if the index is in the dictionary
+	if (index > decompressor->node_count) {
+
+	    // Aggiungo nodo al dizionario
+	    if (previous_node != ROOT && decompressor->node_count < dictionary_size)
+	        add_node(decompressor, previous_node, extracted_parent);
+
+	    index = decompressor->node_count;
 
 
-		} else {
-			// Ad ogni ciclo controllo che il parent non sia EOF_CODE
-			// In tal caso push sulla pila
+	    emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
 
-				emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
 
-			// Aggiungo nodo al dizionario
-			if (previous_node != ROOT && decompressor->node_count < dictionary_size)
-				add_node(decompressor, previous_node, extracted_parent);
+	} else {
+	    // Ad ogni ciclo controllo che il parent non sia EOF_CODE
+	    // In tal caso push sulla pila
 
-		}
+	    emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
 
-		// Imposto il nodo ricevuto come prossimo nodo al quale aggiungeremo il figlio
-		previous_node = current_node;
-
-		// Dizionario pieno: svuotare tutto
-		if (decompressor->node_count >= dictionary_size) {
-			/*	free(decompressor->dictionary);
-			decompressor_init(decompressor, dictionary_size, 0);*/
-			previous_node = ROOT;
-			//end_update = 1;
-
-		}
+	    // Aggiungo nodo al dizionario
+	    if (previous_node != ROOT && decompressor->node_count < dictionary_size)
+	        add_node(decompressor, previous_node, extracted_parent);
 
 	}
+
+	// Imposto il nodo ricevuto come prossimo nodo al quale aggiungeremo il figlio
+	previous_node = current_node;
+
+	// Dizionario pieno: svuotare tutto
+	if (decompressor->node_count >= dictionary_size) {
+	  /*free(decompressor->dictionary);
+	    decompressor_init(decompressor, dictionary_size, 0);*/
+	    previous_node = ROOT;
+	  //end_update = 1;
+
+	}
+
+    }
 
     //alla fine della decompressione controllo che la dimensione del file decompresso sia uguale a quella originale
     check_decompression(output_file, header->file_size, header->checksum, remainder);
