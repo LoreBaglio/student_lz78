@@ -69,7 +69,6 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
                 //Parent node code emission
                 ret = write_code(bitio, bits_per_code, parent_node);
-                //write_data(&parent_node, 1, sizeof(int), bitio->f);
 
                 if (ret < 0){
                     printf("Error when writing to file %s\n", output_file_name);
@@ -77,8 +76,10 @@ void compress(const char * input_filename, const char* output_file_name, int dic
                 }
 
                 if (compressor->node_count < dictionary_size) {
+
                     // Increment node_count and put as new child id
                     put(compressor->dictionary, node_key, ++compressor->node_count);
+
                     // Restart from one-char node
                     node_key->father = ROOT;
                     parent_node = get(compressor->dictionary, node_key, &found);
@@ -101,9 +102,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
         }
     }
 
-    // EOF_CODE
-    //parent_node = EOF_CODE;
-    //write_data(&parent_node, 1, sizeof(int), bitio->f);
+    // Write last code and EOF code
     write_code(bitio,bits_per_code, parent_node);
     parent_node = EOF_CODE;
     write_code(bitio, bits_per_code, parent_node);
@@ -111,7 +110,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     header_size = crc_header_offset + sizeof(crc);
     is_compressed = check_size(bitio->f, head->file_size, header_size);
 
-    //Attach CRC FIXME L'ho rimosso per far funzionare la compressione. Poi sistemiamo
+    //Attach CRC
     fseek(bitio->f, crc_header_offset, SEEK_SET);
     fwrite(&remainder,sizeof(crc),1,bitio->f);
 
@@ -165,7 +164,8 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
 /**
  * This function prepares the dictionary, all the children of the root, corresponding to all symbols of the alphabet (costly to look along all the file to
- * find just the subset of symbols that appears)
+ * find just the subset of symbols that appears). Code are on bits_per_code bits in order to write only necessary
+ * bits to represent dictionary nodes.
  */
 void dictionary_init(struct compressor_data *compressor, int symbol_alphabet, int dictionary_size){
 
