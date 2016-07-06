@@ -37,8 +37,7 @@ struct file_header {
     off_t file_size;
     time_t last_modification_time;
     crc checksum;
-    //TODO decidere bit compressed
-    //uint8_t compressed;
+    uint8_t compressed;
 };
 
 void get_header(const char*, struct file_header*,int);
@@ -52,7 +51,8 @@ void read_header(FILE*, struct file_header*);
 crc crc32b(uint8_t const *, int);
 void step_crc(crc* , char);
 uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size);
-//int check_header(struct file_header*);
+/* check_header function is called by the decompressor. It returns -1 if there are errors, 0 if the file is not compressed, 1 if the file is  compressed and has the expected format.*/
+int check_header(struct file_header*);
 void check_decompression(FILE* fp, off_t original_size, crc original_crc, crc computed_crc);
 
 #endif //STUDENT_LZ78_FILE_IO_H

@@ -90,7 +90,7 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
     struct file_header* header = calloc(1, sizeof(struct file_header));
     uint8_t end_update = 0;
     crc remainder = 0;
-    //int result;
+    int result;
 
     //Init bitio
     bitio = bitio_open(input_filename,READ);
@@ -110,16 +110,16 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
    	   // FIXME don't decompress
     }*/
 
-  /*FIXME se usiamo compressed nell'header
+  
 
     result = check_header(header);
     if(result == -1){
-	//error
+	//TODO error
+        //exit?
     }
     if(result == 0){
-	//don't decompress
+	//TODO don't decompress
     }
-   */
 
     // Get the dictionary size from the header of the compressed file
     dictionary_size = header -> dictionary_size;

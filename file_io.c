@@ -11,7 +11,7 @@ void print_header(struct file_header* header){
     printf("File Size: %d\n",(int)header->file_size);
     printf("Last Modification: %s",ctime(&header->last_modification_time));
     printf("Checksum: %u\n",header->checksum);
-    //printf("Compressed: %d\n", header->compressed);
+    printf("Compressed: %d\n", header->compressed);
 }
 
 void get_header(const char* filename, struct file_header* header,int dictionary_size) {
@@ -33,7 +33,7 @@ void get_header(const char* filename, struct file_header* header,int dictionary_
     header->file_size = file_stat.st_size;
     header->last_modification_time = file_stat.st_atim.tv_sec;
     header->checksum = 0;       //Checksum will be set at the end of compression
-    //header->compressed = 0;     //Compressed will be set at the end of compression
+    header->compressed = 0;     //Compressed will be set at the end of compression
 }
 
 crc
@@ -152,7 +152,7 @@ void read_header(FILE* fp, struct file_header* head)
 	
 	read_data((void*)&(head->checksum), 1, sizeof(crc), fp);
 	
-	//read_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
+	read_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
 }
 
 
@@ -210,8 +210,7 @@ int insert_header(const char *filename, int dictionary_size, FILE *fp, struct fi
     // CRC
     write_data((void*)&(head->checksum), 1, sizeof(crc), fp);
     
-
-    //write_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
+    write_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
 
     return crc_offset;
 
@@ -234,9 +233,9 @@ uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
 	}
 }
 
-/*int check_header(struct file_header* head)
+int check_header(struct file_header* head)
 {
-	time_t timestamp;
+	//time_t timestamp;
 
 	if(head->compression_algorithm_code != LZ_78_CODE){
 		printf("error: compression algorithm is not LZ78\n");
@@ -250,18 +249,19 @@ uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
 		printf("error: symbol format not valid\n");
 		return -1;
 	}
+	//TODO decidere se dobbiamo fare controlli su timestamp e nome del file
         //controllo che l'ultima modifica sia precedente all'ora corrente
-	timestamp = time(NULL);
+	/*timestamp = time(NULL);
 	if(difftime(timestamp, head->last_modification_time) < 0){
 		printf("error: data corruption\n");
 		return -1;
-	}
+	}*/
 	if(head->compressed == 0){
 		return 0;
 	}
 	return 1;
 }
-*/
+
 void check_decompression(FILE* fp, off_t original_size, crc original_crc, crc computed_crc)
 {
 	off_t size = ftell(fp);
