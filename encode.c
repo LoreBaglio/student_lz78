@@ -48,6 +48,37 @@ int bitio_close(struct bitio* b)
 	return ret;
 }
 
+int compressor_bitio_close(struct bitio* b, unsigned char* content, off_t original_size, int header_size)
+{
+	int ret = 0;
+	uint8_t is_compressed;
+
+	if(b == NULL){
+		errno = EINVAL;
+		return -1;
+	}
+	if(b->mode == 1 && b->wp > 0){
+		if(fwrite ((void*)&b->data, 1, (b->wp + 7)/8, b->f) != 1){
+			ret = -1;
+		}
+	}
+
+	is_compressed =  check_size(b->f, original_size, header_size);
+	fseek(b->f, header_size - sizeof(uint8_t), SEEK_SET);
+    	if (fwrite(&is_compressed, sizeof(uint8_t), 1, b->f) != 1){
+		ret = -1;
+	}
+	if(is_compressed == 0){
+		if (fwrite(content, original_size, 1, b->f) != 1){
+			ret = -1;
+		}
+	}
+	fclose(b->f);
+	bzero(b, sizeof(*b));
+	free(b);
+	return ret;
+}
+
 int write_code(struct bitio* b, int size, uint64_t data){
     // <azzera uint64>
     // <scrivi e shifta puntatore>

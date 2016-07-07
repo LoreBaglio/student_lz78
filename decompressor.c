@@ -116,9 +116,14 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
     if(result == -1){
 	//TODO error
         //exit?
+	exit(1);
     }
     if(result == 0){
 	//TODO don't decompress
+	unsigned char* text = (unsigned char*)malloc(header->file_size);
+	read_data(text, 1, header->file_size, bitio->f);
+	write_data(text, 1, header->file_size, output_file);
+	exit(0);
     }
 
     // Get the dictionary size from the header of the compressed file

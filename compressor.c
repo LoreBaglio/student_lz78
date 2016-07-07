@@ -22,7 +22,8 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     int header_size;
     struct file_header *head = (struct file_header *) malloc(sizeof(struct file_header));
     uint8_t end_update = 0;
-    
+    unsigned char* file_content;
+    int count = 0;
 
     // Prepare all characters as first children of the root of the tree
     dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
@@ -44,6 +45,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     node_key = calloc(1, sizeof(struct table_key));
 
     crc_header_offset = insert_header(input_filename, dictionary_size, bitio->f, head);
+    file_content = (unsigned char*)malloc(head->file_size);
     // Write is_compressed and in case of compressed file larger than original,
     // reset the flag at the end
     //write_code(bitio,1,1);
@@ -55,6 +57,10 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
             // Incremental CRC, computed during the compression cycle and attached to the header at the end
             step_crc(&remainder, current_symbol);
+            
+	    // memorizzo il simbolo letto nel caso in cui non debba inviare il file compresso ma quello originale 
+	    //FIXME o invece è meglio riaprire il file e rileggerlo?
+            file_content[count++] = current_symbol;		
 
             //Prepare key for lookup
             node_key->code = current_symbol;
@@ -105,26 +111,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     parent_node = EOF_CODE;
     write_code(bitio, bits_per_code, parent_node);
 
-   // header_size = crc_header_offset + sizeof(crc);
-   // is_compressed = check_size(bitio->f, head->file_size, header_size);
-
-    //Attach CRC
-    //fseek(bitio->f, crc_header_offset, SEEK_SET);
-    //fwrite(&remainder,sizeof(crc),1,bitio->f);
-
-    
-    header_size = crc_header_offset + sizeof(crc) + sizeof(uint8_t);
-    is_compressed = check_size(bitio->f, head->file_size, header_size);
-
     //Attach CRC
     fseek(bitio->f, crc_header_offset, SEEK_SET);
     write_data(&remainder, 1, sizeof(crc), bitio->f);
-
-    //Attach is_compressed
-    fseek(bitio->f, crc_header_offset + sizeof(crc), SEEK_SET);
-    write_data(&is_compressed, 1, sizeof(uint8_t), bitio->f);
-   
-
 
     /*if(is_compressed == 0){
 
@@ -146,8 +135,12 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
     //end_compressed_file();
     fseek(bitio->f, 0, SEEK_END);
-    bitio_close(bitio);
+    header_size = crc_header_offset + sizeof(crc) + sizeof(uint8_t);
+    //FIXME la bitio_close potrebbe fare una write e cambiare la dimensione del file compresso ho pensato di controllare la dimensione all'interno della close()
+    compressor_bitio_close(bitio, file_content, head->file_size, header_size);
     fclose(input_fp);
+
+    free(file_content);
 
     destroy(compressor->dictionary);
     free(compressor);

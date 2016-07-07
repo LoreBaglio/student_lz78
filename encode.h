@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <strings.h>
+#include "file_io.h"
 
 #ifndef STUDENT_LZ78_SYMBOL_IO_H
 #define STUDENT_LZ78_SYMBOL_IO_H
@@ -33,6 +34,7 @@ int read_code(struct bitio*,int size, uint64_t* result);
 int write_code(struct bitio*, int size, uint64_t data);
 struct bitio* bitio_open(const char* filename, u_int mode);
 int bitio_close(struct bitio*);
+int compressor_bitio_close(struct bitio* , unsigned char* content, off_t original_size, int header_size);
 u_int compute_bit_to_represent(int);
 int end_compressed_file();
 
