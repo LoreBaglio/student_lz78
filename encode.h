@@ -30,11 +30,38 @@ struct bitio{
     u_int mode;
 };
 
-int read_code(struct bitio*,int size, uint64_t* result);
+/**
+read_code() reads size bits from the file specified in the bitio structure storing them at the location given by result. On success the number of read bits is returned, on error -1 is returned.
+Errors:
+    EINVAL at least one of the arguments was not valid
+    ENODATA fread() function failed
+*/
+int read_code(struct bitio*, int size, uint64_t* result);
+
+/**
+write_code() writes size bits in the file specified in the bitio structure obtaining them from data. On success 0 is returned, on error -1 is returned.
+Errors:
+    EINVAL at least one of the arguments was not valid
+    ENOSPC fwrite() function failed
+*/
 int write_code(struct bitio*, int size, uint64_t data);
+
+/**
+bitio_open() allocates and initializes a bitio structure. It returns a pointer to the bitio structure. If the allocation fails, it returns NULL.
+Errors:
+    EINVAL at least one of the arguments was not valid
+    ENOMEM calloc() function failed
+*/
 struct bitio* bitio_open(const char* filename, u_int mode);
+
+/**
+bitio_close() finalizes all the operations that are pending and frees the bitio structure. It overwrites the data before the memory is returned to the system. On success 0 is returned, on error -1 is returned.
+Errors:
+    EINVAL the argument was not valid
+*/
 int bitio_close(struct bitio*);
-int compressor_bitio_close(struct bitio* , unsigned char* content, off_t original_size, int header_size);
+
+int compressor_bitio_close(struct bitio*, unsigned char* content, off_t original_size, int header_size);
 u_int compute_bit_to_represent(int);
 int end_compressed_file();
 
