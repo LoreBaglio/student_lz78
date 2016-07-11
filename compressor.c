@@ -137,7 +137,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     fseek(bitio->f, 0, SEEK_END);
     header_size = crc_header_offset + sizeof(crc) + sizeof(uint8_t);
     //FIXME la bitio_close potrebbe fare una write e cambiare la dimensione del file compresso ho pensato di controllare la dimensione all'interno della close()
-    compressor_bitio_close(bitio, file_content, head->file_size, header_size);
+    if(compressor_bitio_close(bitio, file_content, head->file_size, header_size) < 0){
+	exit(1);
+    }
     fclose(input_fp);
 
     free(file_content);

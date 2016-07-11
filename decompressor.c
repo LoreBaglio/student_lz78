@@ -113,16 +113,27 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
   
 
     result = check_header(header);
+
     if(result == -1){
-	//TODO error
-        //exit?
+
+	printf("Decompression failed\n");
+
+        if(verbose_flag){
+	    printf("error: input file is corrupted\n");
+        }
 	exit(1);
     }
+
     if(result == 0){
-	//TODO don't decompress
+	
 	unsigned char* text = (unsigned char*)malloc(header->file_size);
 	read_data(text, 1, header->file_size, bitio->f);
 	write_data(text, 1, header->file_size, output_file);
+
+	if(verbose_flag){
+	    printf("Decompression finished\n");
+	}
+
 	exit(0);
     }
 
@@ -148,9 +159,12 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 	    exit(1);
 	}
 
-	//controllo se non ho letto EOF     //FIXME decidere definitivamente se usare nodo EOF o semplicemente feof
+	//controllo se non ho letto EOF    
 	if (current_node == EOF_CODE) {
-	    printf("Decompression finished\n");
+
+	    if(verbose_flag){
+	        printf("Decompression finished\n");
+            }
 	    break;
 	}
 
@@ -199,7 +213,14 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
     //alla fine della decompressione controllo che la dimensione del file decompresso sia uguale a quella originale
     check_decompression(output_file, header->file_size, header->checksum, remainder);
    
-    bitio_close(bitio);
+    if (bitio_close(bitio) < 0){
+
+        if(verbose_flag){
+            printf("error: closure of the input file failed\n");
+        }
+        exit(1);
+    }
+
     fclose(output_file);
 
     bzero(decompressor, sizeof(struct decompressor_data));

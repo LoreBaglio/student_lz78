@@ -224,11 +224,16 @@ uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
 	new_size -= header_size;
 
 	if (original_size >= new_size){
-		printf("compression finished successfully, original size was: %d new size is: %d\n", (int)original_size, new_size);
+
+		if(verbose_flag){
+			printf("compression finished successfully, original size was: %d new size is: %d\n", (int)original_size, new_size);
+		}
 		return 1;
 	}
 	else{
-		printf("compression finished unsuccessfully, original size was: %d new size is: %d\n", (int)original_size, new_size);
+		if(verbose_flag){
+			printf("compression finished unsuccessfully, original size was: %d new size is: %d\n", (int)original_size, new_size);
+		}
 	    return 0;
 	}
 }
@@ -238,22 +243,28 @@ int check_header(struct file_header* head)
 	//time_t timestamp;
 
 	if(head->compression_algorithm_code != LZ_78_CODE){
-		printf("error: compression algorithm is not LZ78\n");
+		if(verbose_flag){
+			printf("compression algorithm is not LZ78\n");
+		}
 		return -1;
 	}
 	if(head->dictionary_size < MIN_DICTIONARY_SIZE || head->dictionary_size > MAX_DICTIONARY_SIZE){
-		printf("error: data corruption\n");
+		if(verbose_flag){
+			printf("dictionary size not valid\n");
+		}
 		return -1;
 	}
 	if(head->symbol_size != SYMBOL_SIZE){
-		printf("error: symbol format not valid\n");
+		if(verbose_flag){
+			printf("symbol format not valid\n");
+		}
 		return -1;
 	}
 	//TODO decidere se dobbiamo fare controlli su timestamp e nome del file
         //controllo che l'ultima modifica sia precedente all'ora corrente
 	/*timestamp = time(NULL);
 	if(difftime(timestamp, head->last_modification_time) < 0){
-		printf("error: data corruption\n");
+		printf("last modification time not valid\n");
 		return -1;
 	}*/
 	if(head->compressed == 0){

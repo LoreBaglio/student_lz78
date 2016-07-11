@@ -26,6 +26,7 @@ typedef uint32_t crc;
 #define MIN_DICTIONARY_SIZE 256
 #define MAX_DICTIONARY_SIZE 65536
 
+extern int verbose_flag;
 
 struct file_header {
 
