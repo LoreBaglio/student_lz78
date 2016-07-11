@@ -38,7 +38,7 @@ int bitio_close(struct bitio* b)
 		return -1;
 	}
 	if(b->mode == 1 && b->wp > 0){
-		if(fwrite ((void*)&b->data, 1, (b->wp + 7)/8, b->f) != 1){
+		if(fwrite ((void*)&b->data, 1, (b->wp + 7)/8, b->f) != 1){  //FIXME
 			ret = -1;
 		}
 	}
@@ -58,7 +58,8 @@ int compressor_bitio_close(struct bitio* b, unsigned char* content, off_t origin
 		return -1;
 	}
 	if(b->mode == 1 && b->wp > 0){
-		if(fwrite ((void*)&b->data, 1, (b->wp + 7)/8, b->f) != 1){
+		//if(fwrite ((void*)&b->data, 1, (b->wp + 7)/8, b->f) != 1){  //FIXME
+		if(fwrite ((void*)&b->data, 1, (b->wp + 7)/8, b->f) != (b->wp + 7)/8){  
 			ret = -1;
 		}
 	}
@@ -101,7 +102,7 @@ int write_code(struct bitio* b, int size, uint64_t data){
         // altrimenti se è 64 il compilatore ignora lo shift in quanto è uno shift rotante, i bit non vengono persi
 		if(b->wp < 64) b->data |= data << b->wp;
 		ret = fwrite((void*)&b->data, 1, 8, b->f);
-		if( ret != 8){
+		if(ret != 8){
 			errno = ENOSPC;
 			return -1;
 		}
@@ -112,9 +113,6 @@ int write_code(struct bitio* b, int size, uint64_t data){
 
 }
 
-/*
-    Return number of read bits if positive, error if negative
-*/
 int read_code(struct bitio* b, int size, uint64_t* my_data){
 	int space;
 	int ret;

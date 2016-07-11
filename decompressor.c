@@ -19,11 +19,11 @@ void decompressor_init(struct decompressor_data *decompressor, int dictionary_si
     else
 	memset(decompressor->dictionary, 0,  dictionary_size * sizeof(struct elem));
 
-    //inizializzo il nodo radice
+    //init root
     decompressor->dictionary[0].c = '\0';
     decompressor->dictionary[0].parent = EOF_CODE;
 
-    //Init array //FIXME Pensare al fatto che il primo elemento
+    //Init array 
     for (k = 1; !end_loop; k++) {
 
         decompressor->dictionary[k].c = c;
@@ -75,7 +75,7 @@ unsigned char stack_pop(struct stack* s) {
 }
 
 
-void decompress_LZW(const char *input_filename, const char *output_file_name) {
+void decompress(const char *input_filename, const char *output_file_name) {
 
     FILE* output_file;
     int stop = 0;
@@ -96,21 +96,23 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
     bitio = bitio_open(input_filename,READ);
     if (bitio == NULL){
         printf("Cannot open input file %s\n", input_filename);
+	if(verbose_flag){
+	    printf("Decompression interrupted\n");
+	}
 	exit(1);
     }
 
     output_file = open_file(output_file_name, WRITE);
 
+    if (output_file == NULL) {
+        printf("Cannot open file %s in write mode\n", output_file_name);
+	if(verbose_flag){
+	    printf("Decompression interrupted\n");
+        }
+        exit(1);
+    }
+
     read_header(bitio->f, header);
-
-  //read_code(bitio,1,&is_compressed);
-
-  /*
-    if(is_compressed == 0){
-   	   // FIXME don't decompress
-    }*/
-
-  
 
     result = check_header(header);
 
@@ -155,11 +157,13 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 	ret = read_code(bitio, bits_per_code, &current_node);
 	stop = ret;
 	if(ret < 0){
-	    printf("Error: corrupted code");        //Fixme è corretto questo check?
+	    printf("Error: corrupted code\n");
+	    if(verbose_flag){
+	        printf("Decompression interrupted\n");
+            }      
 	    exit(1);
 	}
-
-	//controllo se non ho letto EOF    
+    
 	if (current_node == EOF_CODE) {
 
 	    if(verbose_flag){
@@ -210,7 +214,6 @@ void decompress_LZW(const char *input_filename, const char *output_file_name) {
 
     }
 
-    //alla fine della decompressione controllo che la dimensione del file decompresso sia uguale a quella originale
     check_decompression(output_file, header->file_size, header->checksum, remainder);
    
     if (bitio_close(bitio) < 0){

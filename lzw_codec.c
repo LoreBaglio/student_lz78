@@ -36,10 +36,8 @@ OPTIONS
 #define MIN_DICTIONARY_SIZE 256
 #define MAX_DICTIONARY_SIZE 65536
 
-// Global variables
+// Global variable
 int verbose_flag = 0;
-
-// Support functions
 
 int main (int argc, char **argv)
 {
@@ -127,7 +125,7 @@ int main (int argc, char **argv)
       if(length_flag){
 
       	dictionary_size = atoi(length_value);
-        // FIXME Potremmo aggiungere lettura della sequenza "64K"?
+       
           if(dictionary_size < MIN_DICTIONARY_SIZE || dictionary_size > MAX_DICTIONARY_SIZE){
             dictionary_size = DEFAULT_DICTIONARY_SIZE;
 
@@ -143,7 +141,7 @@ int main (int argc, char **argv)
         printf("Dictionary size: %d\n",dictionary_size);
 
 
-      // Chiamata al compressore
+      //call compressor
       compress(input_value, output_value, dictionary_size);
 
     } else {
@@ -176,7 +174,8 @@ int main (int argc, char **argv)
 	  printf("You cannot specify the dictionary size during the decompression phase: it will be ignored.\n");
       }
 
-    decompress_LZW(input_value, output_value);
+    //call decompressor
+    decompress(input_value, output_value);
 
     } else {
 

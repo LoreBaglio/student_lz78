@@ -32,6 +32,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     bitio = bitio_open(output_file_name, WRITE);
     if (bitio == NULL) {
         printf("Cannot open file %s in write mode\n", output_file_name);
+	if(verbose_flag){
+	    printf("Compression interrupted\n");
+        }
         exit(1);
     }
 
@@ -39,6 +42,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
     if (input_fp == NULL) {
         printf("Cannot open file %s in read mode\n", input_filename);
+	if(verbose_flag){
+	    printf("Compression interrupted\n");
+        }
         exit(1);
     }
 
@@ -76,6 +82,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
                 if (ret < 0){
                     printf("Error when writing to file %s\n", output_file_name);
+		    if(verbose_flag){
+			printf("Compression interrupted\n");
+		    }
                     exit(1);
                 }
 
@@ -138,8 +147,13 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     header_size = crc_header_offset + sizeof(crc) + sizeof(uint8_t);
     //FIXME la bitio_close potrebbe fare una write e cambiare la dimensione del file compresso ho pensato di controllare la dimensione all'interno della close()
     if(compressor_bitio_close(bitio, file_content, head->file_size, header_size) < 0){
+
+	if(verbose_flag){
+		printf("error: closure of the output file failed\n");
+	}
 	exit(1);
     }
+
     fclose(input_fp);
 
     free(file_content);
@@ -163,6 +177,9 @@ void dictionary_init(struct compressor_data *compressor, int symbol_alphabet, in
 
     if (compressor->dictionary == NULL){
         printf("Cannot allocate dictionary of the specified size\n");
+	if(verbose_flag){
+	    printf("Compression interrupted\n");
+        }
         exit(1);
     }
 

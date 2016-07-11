@@ -14,7 +14,7 @@ struct compressor_data {
 };
 
 extern u_int bits_per_code;
-extern int size_block_bitio;
+extern int verbose_flag;
 
 void compress(const char*,const char*,int);
 void dictionary_init(struct compressor_data *, int, int);
