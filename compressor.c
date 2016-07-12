@@ -88,7 +88,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
                     exit(1);
                 }
 
-                if (compressor->node_count < dictionary_size) {
+                if (compressor->node_count < dictionary_size - 1) {
 
                     // Increment node_count and put as new child id
                     put(compressor->dictionary, node_key, ++compressor->node_count);

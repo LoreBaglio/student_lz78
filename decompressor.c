@@ -181,7 +181,7 @@ void decompress(const char *input_filename, const char *output_file_name) {
 		if (index > decompressor->node_count) {
 
 			// Aggiungo nodo al dizionario
-			if (previous_node != ROOT && decompressor->node_count < dictionary_size)
+			if (previous_node != ROOT && decompressor->node_count < dictionary_size - 1)
 				add_node(decompressor, previous_node, extracted_parent);
 
 			index = decompressor->node_count;
@@ -197,7 +197,7 @@ void decompress(const char *input_filename, const char *output_file_name) {
 			emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
 
 			// Aggiungo nodo al dizionario
-			if (previous_node != ROOT && decompressor->node_count < dictionary_size)
+			if (previous_node != ROOT && decompressor->node_count < dictionary_size - 1)
 				add_node(decompressor, previous_node, extracted_parent);
 
 		}
