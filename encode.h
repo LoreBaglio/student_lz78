@@ -16,13 +16,12 @@
 #define ASCII_ALPHABET 1     // Assumption for the project: symbols are characters
 
 u_int bits_per_code; // Viene settata dal compressor in quanto è dichiarata extern in compressor.h
-int size_bitio_block;
 
 
 // Typedef for type of node counters
 typedef uint64_t node;
 
-struct bitio{
+struct bitio {
     FILE* f;
     uint64_t data;
     u_int wp;

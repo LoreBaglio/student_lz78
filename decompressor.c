@@ -96,20 +96,22 @@ void decompress(const char *input_filename, const char *output_file_name) {
     bitio = bitio_open(input_filename,READ);
     if (bitio == NULL){
         printf("Cannot open input file %s\n", input_filename);
-	if(verbose_flag){
-	    printf("Decompression interrupted\n");
-	}
-	exit(1);
+
+		if(verbose_flag)
+			printf("Decompression interrupted\n");
+
+		exit(1);
     }
 
     output_file = open_file(output_file_name, WRITE);
 
     if (output_file == NULL) {
         printf("Cannot open file %s in write mode\n", output_file_name);
-	if(verbose_flag){
-	    printf("Decompression interrupted\n");
-        }
-        exit(1);
+
+		if(verbose_flag)
+			printf("Decompression interrupted\n");
+
+		exit(1);
     }
 
     read_header(bitio->f, header);
@@ -118,25 +120,24 @@ void decompress(const char *input_filename, const char *output_file_name) {
 
     if(result == -1){
 
-	printf("Decompression failed\n");
+		printf("Decompression failed\n");
 
-        if(verbose_flag){
-	    printf("error: input file is corrupted\n");
-        }
-	exit(1);
+			if(verbose_flag)
+				printf("error: input file is corrupted\n");
+
+		exit(1);
     }
 
     if(result == 0){
 	
-	unsigned char* text = (unsigned char*)malloc(header->file_size);
-	read_data(text, 1, header->file_size, bitio->f);
-	write_data(text, 1, header->file_size, output_file);
+		unsigned char* text = (unsigned char*)malloc(header->file_size);
+		read_data(text, 1, header->file_size, bitio->f);
+		write_data(text, 1, header->file_size, output_file);
 
-	if(verbose_flag){
-	    printf("Decompression finished\n");
-	}
+		if(verbose_flag)
+			printf("Decompression finished\n");
 
-	exit(0);
+		exit(0);
     }
 
     // Get the dictionary size from the header of the compressed file
@@ -154,63 +155,64 @@ void decompress(const char *input_filename, const char *output_file_name) {
 
     while(!feof(bitio->f) || (stop != 0)){
 
-	ret = read_code(bitio, bits_per_code, &current_node);
-	stop = ret;
-	if(ret < 0){
-	    printf("Error: corrupted code\n");
-	    if(verbose_flag){
-	        printf("Decompression interrupted\n");
-            }      
-	    exit(1);
-	}
-    
-	if (current_node == EOF_CODE) {
+		ret = read_code(bitio, bits_per_code, &current_node);
+		stop = ret;
+		if(ret < 0){
+			printf("Error: corrupted code\n");
 
-	    if(verbose_flag){
-	        printf("Decompression finished\n");
-            }
-	    break;
-	}
+			if(verbose_flag)
+				printf("Decompression interrupted\n");
 
-	index = current_node;
+			exit(1);
+		}
 
+		if (current_node == EOF_CODE) {
 
-	//Check if the index is in the dictionary
-	if (index > decompressor->node_count) {
+			if(verbose_flag)
+				printf("Decompression finished\n");
 
-	    // Aggiungo nodo al dizionario
-	    if (previous_node != ROOT && decompressor->node_count < dictionary_size)
-	        add_node(decompressor, previous_node, extracted_parent);
+			break;
+		}
 
-	    index = decompressor->node_count;
+		index = current_node;
 
 
-	    emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
+		//Check if the index is in the dictionary
+		if (index > decompressor->node_count) {
+
+			// Aggiungo nodo al dizionario
+			if (previous_node != ROOT && decompressor->node_count < dictionary_size)
+				add_node(decompressor, previous_node, extracted_parent);
+
+			index = decompressor->node_count;
 
 
-	} else {
-	    // Ad ogni ciclo controllo che il parent non sia EOF_CODE
-	    // In tal caso push sulla pila
+			emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
 
-	    emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
 
-	    // Aggiungo nodo al dizionario
-	    if (previous_node != ROOT && decompressor->node_count < dictionary_size)
-	        add_node(decompressor, previous_node, extracted_parent);
+		} else {
+			// Ad ogni ciclo controllo che il parent non sia EOF_CODE
+			// In tal caso push sulla pila
 
-	}
+			emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
 
-	// Imposto il nodo ricevuto come prossimo nodo al quale aggiungeremo il figlio
-	previous_node = current_node;
+			// Aggiungo nodo al dizionario
+			if (previous_node != ROOT && decompressor->node_count < dictionary_size)
+				add_node(decompressor, previous_node, extracted_parent);
 
-	// Dizionario pieno: svuotare tutto
-	if (decompressor->node_count >= dictionary_size) {
-	  /*free(decompressor->dictionary);
-	    decompressor_init(decompressor, dictionary_size, 0);*/
-	    previous_node = ROOT;
-	  //end_update = 1;
+		}
 
-	}
+		// Imposto il nodo ricevuto come prossimo nodo al quale aggiungeremo il figlio
+		previous_node = current_node;
+
+		// Dizionario pieno: svuotare tutto
+		if (decompressor->node_count >= dictionary_size) {
+		  /*free(decompressor->dictionary);
+			decompressor_init(decompressor, dictionary_size, 0);*/
+			previous_node = ROOT;
+		  //end_update = 1;
+
+		}
 
     }
 
@@ -218,9 +220,9 @@ void decompress(const char *input_filename, const char *output_file_name) {
    
     if (bitio_close(bitio) < 0){
 
-        if(verbose_flag){
+        if(verbose_flag)
             printf("error: closure of the input file failed\n");
-        }
+
         exit(1);
     }
 

@@ -148,23 +148,13 @@ void print_table(struct hash_table * hash_table) {
 
 int hash(struct table_key *key, int size) {
 
-    unsigned long int hashval = 0;
-    int i = 0;
-    int digits_of_father = count_digits(key->father);
+    const unsigned char* p = (const unsigned char*)( &key );
+    size_t h = 2166136261;
 
-    // 1 (key->code) + '\0'
-    char* real_key = calloc(1, digits_of_father + 2);
-    real_key[digits_of_father + 1] = '\0';
-    sprintf(real_key, "%d%c", key->father, key->code);
+    for (unsigned int i = 0; i < sizeof(key); ++i)
+        h = (h * 16777619) ^ p[i];
 
-    /* Convert our string to an integer */
-    while( hashval < ULONG_MAX && i < strlen( real_key  ) ) {
-        hashval = hashval << 8;
-        hashval += real_key[ i ];
-        i++;
-    }
-
-    return hashval % size;
+    return h % size;
 }
 
 int count_digits(int n) {

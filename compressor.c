@@ -1,5 +1,5 @@
 #include "compressor.h"
-#include "file_io.h"
+
 
 
 void compress(const char * input_filename, const char* output_file_name, int dictionary_size) {
@@ -32,9 +32,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     bitio = bitio_open(output_file_name, WRITE);
     if (bitio == NULL) {
         printf("Cannot open file %s in write mode\n", output_file_name);
-	if(verbose_flag){
-	    printf("Compression interrupted\n");
-        }
+	    if(verbose_flag)
+	        printf("Compression interrupted\n");
+
         exit(1);
     }
 
@@ -42,9 +42,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
     if (input_fp == NULL) {
         printf("Cannot open file %s in read mode\n", input_filename);
-	if(verbose_flag){
-	    printf("Compression interrupted\n");
-        }
+	    if(verbose_flag)
+	        printf("Compression interrupted\n");
+
         exit(1);
     }
 
@@ -82,9 +82,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
                 if (ret < 0){
                     printf("Error when writing to file %s\n", output_file_name);
-		    if(verbose_flag){
-			printf("Compression interrupted\n");
-		    }
+                    if(verbose_flag)
+                        printf("Compression interrupted\n");
+
                     exit(1);
                 }
 
@@ -148,10 +148,10 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     //FIXME la bitio_close potrebbe fare una write e cambiare la dimensione del file compresso ho pensato di controllare la dimensione all'interno della close()
     if(compressor_bitio_close(bitio, file_content, head->file_size, header_size) < 0){
 
-	if(verbose_flag){
-		printf("error: closure of the output file failed\n");
-	}
-	exit(1);
+        if(verbose_flag)
+            printf("error: closure of the output file failed\n");
+
+	    exit(1);
     }
 
     fclose(input_fp);
@@ -211,9 +211,7 @@ void dictionary_init(struct compressor_data *compressor, int symbol_alphabet, in
 
         }
 
-        //print_table(compressor->dictionary);
-
-        //++compressor->node_count;   // Hopping the EOF node id
+        free(node_key);
     }
 
 }

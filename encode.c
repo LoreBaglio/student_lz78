@@ -15,9 +15,6 @@ struct bitio* bitio_open(const char* filename, u_int mode)
 		return NULL;
 	}
 
-	// Init global var
-	size_bitio_block = sizeof(b->data);
-
 	b->f = fopen(filename, (mode == 0) ? "r" : "w");
 
 	if (b->f == NULL){
