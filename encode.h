@@ -9,14 +9,12 @@
 
 #ifndef STUDENT_LZ78_SYMBOL_IO_H
 #define STUDENT_LZ78_SYMBOL_IO_H
-// Classe che potremmo fondere in file_io
 
 #define EOF_CODE 257
 #define ROOT 0
 #define ASCII_ALPHABET 1     // Assumption for the project: symbols are characters
 
-u_int bits_per_code; // Viene settata dal compressor in quanto è dichiarata extern in compressor.h
-
+u_int bits_per_code; // Number of bits for representing a node of the dictionary
 
 // Typedef for type of node counters
 typedef uint64_t node;
@@ -54,13 +52,22 @@ Errors:
 struct bitio* bitio_open(const char* filename, u_int mode);
 
 /**
-bitio_close() finalizes all the operations that are pending and frees the bitio structure. It overwrites the data before the memory is returned to the system. On success 0 is returned, on error -1 is returned.
+bitio_close() frees the bitio structure. It overwrites the data before the memory is returned to the system. On success 0 is returned, on error -1 is returned.
 Errors:
     EINVAL the argument was not valid
 */
 int bitio_close(struct bitio*);
 
+/**
+compressor_bitio_close() finalizes all the operations that are pending and frees the bitio structure. It overwrites the data before the memory is returned to the system. On success 0 is returned, on error -1 is returned.
+Errors:
+    EINVAL the argument was not valid
+*/
 int compressor_bitio_close(struct bitio *, unsigned char *content, struct file_header *header, int header_size, const char *output_file);
+
+/**
+compute_bit_to_represent() computes the number of bits for representing a node of the dictionary.
+*/
 u_int compute_bit_to_represent(int);
 
 #endif //STUDENT_LZ78_SYMBOL_IO_H

@@ -56,7 +56,7 @@ int compressor_bitio_close(struct bitio *b, unsigned char *content, struct file_
 
 	header->compressed = check_size(b->f, header->file_size, header_size);
 
-	if(header->compressed == 0){
+	if(header->compressed == 0){   /* file was not compressed */
 		// Trick to overwrite file
 		fclose(b->f);
 		b->f = fopen(output_file, "w");
@@ -88,9 +88,7 @@ int compressor_bitio_close(struct bitio *b, unsigned char *content, struct file_
 }
 
 int write_code(struct bitio* b, int size, uint64_t data){
-    // <azzera uint64>
-    // <scrivi e shifta puntatore>
-    // <se sfora, scrivere un pezzo e scrivere il resto nel prossimo uint_64>
+   
 	int space, ret;
 	if(b == NULL || b->mode != 1 || size > 64){
 		errno = EINVAL;
@@ -106,8 +104,10 @@ int write_code(struct bitio* b, int size, uint64_t data){
 		b->wp += size;
 	}
 	else{
-        // altrimenti se è 64 il compilatore ignora lo shift in quanto è uno shift rotante, i bit non vengono persi
-		if(b->wp < 64) b->data |= data << b->wp;
+       //shift behavior is undefined if an expression is shifted by an amount greater than or equal to the width of the promoted expression
+		if(b->wp < 64)
+			b->data |= data << b->wp; 
+ 
 		ret = fwrite((void*)&b->data, 1, 8, b->f);
 		if(ret != 8){
 			errno = ENOSPC;
@@ -121,6 +121,7 @@ int write_code(struct bitio* b, int size, uint64_t data){
 }
 
 int read_code(struct bitio* b, int size, uint64_t* my_data){
+
 	int space;
 	int ret;
 	if(b == NULL || b->mode != 0 || size > 64){
@@ -138,8 +139,10 @@ int read_code(struct bitio* b, int size, uint64_t* my_data){
 		return size;
 	}
 	else{
-	    // altrimenti se è 64 il compilatore ignora lo shift in quanto è uno shift rotante, i bit non vengono persi
-		if(b->rp < 64) *my_data = (b->data >> b->rp);
+       //shift behavior is undefined if an expression is shifted by an amount greater than or equal to the width of the promoted expression  
+		if(b->rp < 64) 
+			*my_data = (b->data >> b->rp);
+
 		ret = fread((void*)&b->data, 1, 8, b->f);
 		if(ret < 0){
 			errno = ENODATA;
