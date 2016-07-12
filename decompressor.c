@@ -214,7 +214,7 @@ void decompress(const char *input_filename, const char *output_file_name) {
 
     }
 
-    check_decompression(output_file, header->file_size, header->checksum, remainder);
+    check_decompression(output_file, header->file_size, header->checksum, remainder); 
    
     if (bitio_close(bitio) < 0){
 
@@ -224,7 +224,7 @@ void decompress(const char *input_filename, const char *output_file_name) {
         exit(1);
     }
 
-    fclose(output_file);
+    fclose(output_file); 
 
     bzero(decompressor, sizeof(struct decompressor_data));
     free(decompressor);
