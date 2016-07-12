@@ -33,51 +33,8 @@ void get_header(const char* filename, struct file_header* header,int dictionary_
     header->file_size = file_stat.st_size;
     header->last_modification_time = file_stat.st_atim.tv_sec;
     header->checksum = 0;       //Checksum will be set at the end of compression
-    header->compressed = 0;     //Compressed will be set at the end of compression
+    header->compressed = 0;     //Compressed flag will be set at the end of compression
 }
-
-crc
-crc32b(uint8_t const message[], int nBytes)
-{
-    crc  remainder = 0;
-	int byte;
-	uint8_t bit;
-
-    /*
-     * Perform modulo-2 division, a byte at a time.
-     */
-    for (byte = 0; byte < nBytes; ++byte)
-    {
-        /*
-         * Bring the next byte into the remainder.
-         */
-        remainder ^= (message[byte] << (WIDTH - 8));
-
-        /*
-         * Perform modulo-2 division, a bit at a time.
-         */
-        for (bit = 8; bit > 0; --bit)
-        {
-            /*
-             * Try to divide the current data bit.
-             */
-            if (remainder & TOPBIT)
-            {
-                remainder = (remainder << 1) ^ POLYNOMIAL;
-            }
-            else
-            {
-                remainder = (remainder << 1);
-            }
-        }
-    }
-
-    /*
-     * The final remainder is the CRC result.
-     */
-    return (remainder);
-
-}   /* crcSlow() */
 
 void compare_filenames(const char* input_name, const char* output_name)
 {
@@ -102,9 +59,6 @@ FILE* open_file(const char* filename, u_int mode)
 			break; 
 		case WRITE:
 			fp = fopen(filename, "w");
-			break; 
-		case APPEND:
-			fp = fopen(filename, "a");
 			break; 
 	}
 	if(fp == NULL){
@@ -156,33 +110,23 @@ void read_header(FILE* fp, struct file_header* head)
 	read_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
 }
 
-
 void step_crc(crc* remainder, char c) {
 
 	uint8_t bit;
-    /*
-         * Bring the next byte into the remainder.
-         */
-    *remainder ^= (c << (WIDTH - 8));
 
-    /*
-     * Perform modulo-2 division, a bit at a time.
-     */
-    for (bit = 8; bit > 0; --bit)
-    {
-        /*
-         * Try to divide the current data bit.
-         */
-        if (*remainder & TOPBIT)
-        {
-            *remainder = (*remainder << 1) ^ POLYNOMIAL;
-        }
-        else
-        {
-            *remainder = (*remainder << 1);
-        }
-    }
+        /* Bring the next byte into the remainder. */
+	*remainder ^= (c << (WIDTH - 8));
 
+	/* Perform modulo-2 division, a bit at a time. */
+        for (bit = 8; bit > 0; --bit){
+        	/* Try to divide the current data bit. */
+		if (*remainder & TOPBIT){
+		    *remainder = (*remainder << 1) ^ POLYNOMIAL;
+		}
+		else{
+		    *remainder = (*remainder << 1);
+		}
+        }
 }
 
 int write_header(FILE *fp, struct file_header *header) {
@@ -204,6 +148,7 @@ int write_header(FILE *fp, struct file_header *header) {
 	// CRC
 	write_data((void*)&(header->checksum), 1, sizeof(crc), fp);
 
+	// compressed flag
 	write_data((void*)&(header->compressed), 1, sizeof(uint8_t), fp);
 
 	// Header will be not greater than 2^16 - 1
@@ -212,7 +157,7 @@ int write_header(FILE *fp, struct file_header *header) {
 
 uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
 {
-	int new_size;
+	off_t new_size;
 
    	new_size = ftell(compressed_file);
 	new_size -= header_size;
@@ -220,13 +165,13 @@ uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
 	if (original_size >= new_size){
 
 		if(verbose_flag){
-			printf("compression finished successfully, original size was: %d new size is: %d\n", (int)original_size, new_size);
+			printf("compression finished successfully, original size was: %ld new size is: %ld\n", original_size, new_size);
 		}
 		return 1;
 	}
 	else{
 		if(verbose_flag){
-			printf("compression finished unsuccessfully, original size was: %d new size is: %d\n", (int)original_size, new_size);
+			printf("compression finished unsuccessfully, original size was: %ld new size is: %ld\n", original_size, new_size);
 		}
 	    return 0;
 	}
@@ -234,8 +179,6 @@ uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
 
 int check_header(struct file_header* head)
 {
-	//time_t timestamp;
-
 	if(head->compression_algorithm_code != LZ_78_CODE){
 		if(verbose_flag){
 			printf("compression algorithm is not LZ78\n");
@@ -254,13 +197,6 @@ int check_header(struct file_header* head)
 		}
 		return -1;
 	}
-	//TODO decidere se dobbiamo fare controlli su timestamp e nome del file
-        //controllo che l'ultima modifica sia precedente all'ora corrente
-	/*timestamp = time(NULL);
-	if(difftime(timestamp, head->last_modification_time) < 0){
-		printf("last modification time not valid\n");
-		return -1;
-	}*/
 	if(head->compressed == 0){
 		return 0;
 	}
@@ -272,7 +208,7 @@ void check_decompression(FILE* fp, off_t original_size, crc original_crc, crc co
 	off_t size = ftell(fp);
 
 	if(size != original_size){
-		printf("error during decompression\nOriginal file was %d, decompressed one is %d\n", (int)original_size, (int)size);
+		printf("error during decompression\nOriginal file was %ld, decompressed one is %ld\n", original_size, size);
 	}
 	if(original_crc != computed_crc){
 		printf("error during decompression\nOriginal crc was %u, computed crc is %u\n", original_crc, computed_crc);
