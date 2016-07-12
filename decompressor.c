@@ -82,10 +82,10 @@ void decompress(const char *input_filename, const char *output_file_name) {
     int ret;
     int32_t dictionary_size;
     struct bitio* bitio;
-    struct decompressor_data * decompressor = calloc(1, sizeof(struct decompressor_data));
+    struct decompressor_data *decompressor;
     struct file_header* header = calloc(1, sizeof(struct file_header));
     crc remainder = 0;
-    int result;
+    int is_compressed;
 
     //Init bitio
     bitio = bitio_open(input_filename,READ);
@@ -111,9 +111,9 @@ void decompress(const char *input_filename, const char *output_file_name) {
 
     read_header(bitio->f, header);
 
-    result = check_header(header);
+    is_compressed = check_header(header);
 
-    if(result == -1){
+    if(is_compressed == -1){
 
 		printf("Decompression failed\n");
 
@@ -123,8 +123,8 @@ void decompress(const char *input_filename, const char *output_file_name) {
 		exit(1);
     }
 
-    if(result == 0){
-	
+    if(is_compressed == 0){
+
 		unsigned char* text = (unsigned char*)malloc(header->file_size);
 		read_data(text, 1, header->file_size, bitio->f);
 		write_data(text, 1, header->file_size, output_file);
@@ -132,7 +132,13 @@ void decompress(const char *input_filename, const char *output_file_name) {
 		if(verbose_flag)
 			printf("Decompression finished\n");
 
-		exit(0);
+		free(text);
+		free(header->filename);
+		free(header);
+		bitio_close(bitio);
+		fclose(output_file);
+
+		return;
     }
 
     // Get the dictionary size from the header of the compressed file
@@ -142,6 +148,7 @@ void decompress(const char *input_filename, const char *output_file_name) {
     struct stack* s = calloc(1, sizeof(struct stack));
     stack_init(s, dictionary_size);
 
+	decompressor = calloc(1, sizeof(struct decompressor_data));
     decompressor_init(decompressor, dictionary_size, 0);
 
     // Set encoding number of bits and eof code
@@ -220,12 +227,14 @@ void decompress(const char *input_filename, const char *output_file_name) {
 
     fclose(output_file);
 
-    bzero(decompressor, sizeof(struct decompressor_data));
+    //bzero(decompressor, sizeof(struct decompressor_data));
+	free(decompressor->dictionary);
     free(decompressor);
 
     bzero(s->stk, s->size * sizeof(char));
     free(s);
 
+	free(header->filename);
     bzero(header, sizeof(struct file_header));
     free(header);
 

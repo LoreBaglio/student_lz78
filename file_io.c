@@ -144,6 +144,7 @@ void read_header(FILE* fp, struct file_header* head)
 	read_data((void*)&(head->filename_len), 1, sizeof(int32_t), fp);
 
 	head->filename = (char*)malloc(head->filename_len);
+
 	read_data((void*)(head->filename), 1, head->filename_len, fp);
 
 	read_data((void*)&(head->file_size), 1, sizeof(off_t), fp);
