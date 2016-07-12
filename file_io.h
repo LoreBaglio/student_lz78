@@ -41,6 +41,7 @@ FILE* open_file(const char* filename, u_int mode);
 void compare_filenames(const char* input_name, const char* output_name);
 void read_data(void* dest, int n, int size, FILE* fp);
 void write_data(void* sr, int n, int size, FILE* fp);
+crc crc32b(uint8_t const message[], int nBytes);
 
 /**
 write_header() function writes the header of the file. It returns the length of the header.

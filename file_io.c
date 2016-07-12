@@ -215,7 +215,31 @@ void check_decompression(FILE* fp, off_t original_size, crc original_crc, crc co
 	}
 }
 
+crc crc32b(uint8_t const message[], int nBytes)
+{
+        crc  remainder = 0;
+	int byte;
+	uint8_t bit;
 
+        /* Perform modulo-2 division, a byte at a time. */ 
+        for (byte = 0; byte < nBytes; ++byte){
+         	/* Bring the next byte into the remainder. */
+		remainder ^= (message[byte] << (WIDTH - 8));
+
+		/* Perform modulo-2 division, a bit at a time. */
+        	for (bit = 8; bit > 0; --bit){
+               		/*Try to divide the current data bit. */
+		       	if (remainder & TOPBIT){
+		        	remainder = (remainder << 1) ^ POLYNOMIAL;
+		    	}
+		    	else {
+		        	remainder = (remainder << 1);
+		    	}
+        	}
+    	}
+    	/* The final remainder is the CRC result. */
+    	return (remainder);
+}
 
 
 

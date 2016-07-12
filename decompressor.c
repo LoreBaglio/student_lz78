@@ -149,10 +149,13 @@ void decompress(const char *input_filename, const char *output_file_name) {
     if(is_compressed == 0){
 
 		// Read body of input file and check CRC
+		crc checksum;
 		unsigned char* text = (unsigned char*)malloc(header->file_size);
 		read_data(text, 1, header->file_size, bitio->f);
 		write_data(text, 1, header->file_size, output_file);
 		// TODO bisogna fare il check crc
+		checksum = crc32b(text, header->file_size);   //FIXME text?
+		check_decompression(output_file, header->file_size, header->checksum, checksum);
 		if(verbose_flag)
 			printf("Decompression finished\n");
 
