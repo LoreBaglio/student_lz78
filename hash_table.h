@@ -7,8 +7,6 @@
 
 #endif //STUDENT_LZ78_HASH_TABLE_H
 
-#define NO_ENTRY_FOUND -1
-#define FULL_DICTIONARY -2
 
 #include <stdio.h>
 #include <stdint.h>

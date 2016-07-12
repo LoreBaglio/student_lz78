@@ -16,13 +16,12 @@
 #define ASCII_ALPHABET 1     // Assumption for the project: symbols are characters
 
 u_int bits_per_code; // Viene settata dal compressor in quanto è dichiarata extern in compressor.h
-int size_bitio_block;
 
 
 // Typedef for type of node counters
 typedef uint64_t node;
 
-struct bitio{
+struct bitio {
     FILE* f;
     uint64_t data;
     u_int wp;
@@ -61,8 +60,7 @@ Errors:
 */
 int bitio_close(struct bitio*);
 
-int compressor_bitio_close(struct bitio*, unsigned char* content, off_t original_size, int header_size);
+int compressor_bitio_close(struct bitio *, unsigned char *content, struct file_header *header, int header_size, const char *output_file);
 u_int compute_bit_to_represent(int);
-int end_compressed_file();
 
 #endif //STUDENT_LZ78_SYMBOL_IO_H

@@ -41,13 +41,14 @@ struct file_header {
     uint8_t compressed;
 };
 
-void get_header(const char*, struct file_header*,int);
+void get_header(const char *filename, struct file_header*,int dictionary_size);
 void print_header(struct file_header*);
 FILE* open_file(const char* filename, u_int mode);
 void compare_filenames(const char* input_name, const char* output_name);
 void read_data(void* dest, int n, int size, FILE* fp);
 void write_data(void* sr, int n, int size, FILE* fp);
-int insert_header(const char* filename, int dictionary_size, FILE* fp, struct file_header*);
+int write_header(FILE* fp, struct file_header*);
+
 void read_header(FILE*, struct file_header*);
 crc crc32b(uint8_t const *, int);
 void step_crc(crc* , char);

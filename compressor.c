@@ -1,5 +1,5 @@
 #include "compressor.h"
-#include "file_io.h"
+
 
 
 void compress(const char * input_filename, const char* output_file_name, int dictionary_size) {
@@ -17,11 +17,8 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     struct bitio *bitio;
     int crc_header_offset = 0;
     int ret;
-    uint8_t is_compressed;
-    uint64_t tmp;
     int header_size;
-    struct file_header *head = (struct file_header *) malloc(sizeof(struct file_header));
-    uint8_t end_update = 0;
+    struct file_header *header = (struct file_header *) malloc(sizeof(struct file_header));
     unsigned char* file_content;
     int count = 0;
 
@@ -32,9 +29,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     bitio = bitio_open(output_file_name, WRITE);
     if (bitio == NULL) {
         printf("Cannot open file %s in write mode\n", output_file_name);
-	if(verbose_flag){
-	    printf("Compression interrupted\n");
-        }
+	    if(verbose_flag)
+	        printf("Compression interrupted\n");
+
         exit(1);
     }
 
@@ -42,19 +39,18 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
     if (input_fp == NULL) {
         printf("Cannot open file %s in read mode\n", input_filename);
-	if(verbose_flag){
-	    printf("Compression interrupted\n");
-        }
+	    if(verbose_flag)
+	        printf("Compression interrupted\n");
+
         exit(1);
     }
 
     node_key = calloc(1, sizeof(struct table_key));
 
-    crc_header_offset = insert_header(input_filename, dictionary_size, bitio->f, head);
-    file_content = (unsigned char*)malloc(head->file_size);
-    // Write is_compressed and in case of compressed file larger than original,
-    // reset the flag at the end
-    //write_code(bitio,1,1);
+    get_header(input_filename, header, dictionary_size);
+    header_size = write_header(bitio->f, header);
+
+    file_content = (unsigned char*)malloc(header->file_size);
 
     while (!feof(input_fp)) {
 
@@ -82,27 +78,26 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
                 if (ret < 0){
                     printf("Error when writing to file %s\n", output_file_name);
-		    if(verbose_flag){
-			printf("Compression interrupted\n");
-		    }
+                    if(verbose_flag)
+                        printf("Compression interrupted\n");
+
                     exit(1);
                 }
 
-                if (compressor->node_count < dictionary_size) {
+                if (compressor->node_count >= dictionary_size - 1) {
 
+                    destroy(compressor->dictionary);
+                    dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
+                    //Prepare key for lookup
+                    node_key->code = current_symbol;
+                    node_key->father = ROOT;
+
+                    // Dictionary lookup
+                    parent_node = get(compressor->dictionary, node_key, &found);
+
+                } else {
                     // Increment node_count and put as new child id
                     put(compressor->dictionary, node_key, ++compressor->node_count);
-
-                    // Restart from one-char node
-                    node_key->father = ROOT;
-                    parent_node = get(compressor->dictionary, node_key, &found);
-                }
-                else {
-                    /*destroy(compressor->dictionary);
-                    dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
-
-                    // Increment node_count and put as new child id
-                    put(compressor -> dictionary, node_key, ++compressor->node_count);*/
                     // Restart from one-char node
                     node_key->father = ROOT;
                     parent_node = get(compressor->dictionary, node_key, &found);
@@ -124,34 +119,16 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     fseek(bitio->f, crc_header_offset, SEEK_SET);
     write_data(&remainder, 1, sizeof(crc), bitio->f);
 
-    /*if(is_compressed == 0){
 
-        // FIXME TEST THIS!
-        // posizione su bit is compressed
-        fseek(bitio->f, header_size, SEEK_SET);
-
-        // Leggo 64 bit
-        fread(&tmp, 1, size_bitio_block, bitio->f);
-
-        // Setto il primo bit a 0
-        tmp &= (1 << (size_bitio_block * 8 - 1)) - 1;
-
-        // Riscrivo il byte
-        fseek(bitio->f, header_size, SEEK_SET);
-        fwrite(&tmp, 1, size_bitio_block, bitio->f);
-
-    }*/
-
-    //end_compressed_file();
     fseek(bitio->f, 0, SEEK_END);
-    header_size = crc_header_offset + sizeof(crc) + sizeof(uint8_t);
+    header->checksum = remainder;
     //FIXME la bitio_close potrebbe fare una write e cambiare la dimensione del file compresso ho pensato di controllare la dimensione all'interno della close()
-    if(compressor_bitio_close(bitio, file_content, head->file_size, header_size) < 0){
+    if(compressor_bitio_close(bitio, file_content, header, header_size, output_file_name) < 0){
 
-	if(verbose_flag){
-		printf("error: closure of the output file failed\n");
-	}
-	exit(1);
+        if(verbose_flag)
+            printf("error: closure of the output file failed\n");
+
+	    exit(1);
     }
 
     fclose(input_fp);
@@ -162,7 +139,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     free(compressor);
 
     free(node_key);
-    free(head);
+    free(header);
 
 }
 
@@ -211,9 +188,7 @@ void dictionary_init(struct compressor_data *compressor, int symbol_alphabet, in
 
         }
 
-        //print_table(compressor->dictionary);
-
-        //++compressor->node_count;   // Hopping the EOF node id
+        free(node_key);
     }
 
 }

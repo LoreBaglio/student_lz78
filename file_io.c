@@ -144,6 +144,7 @@ void read_header(FILE* fp, struct file_header* head)
 	read_data((void*)&(head->filename_len), 1, sizeof(int32_t), fp);
 
 	head->filename = (char*)malloc(head->filename_len);
+
 	read_data((void*)(head->filename), 1, head->filename_len, fp);
 
 	read_data((void*)&(head->file_size), 1, sizeof(off_t), fp);
@@ -184,36 +185,29 @@ void step_crc(crc* remainder, char c) {
 
 }
 
-int insert_header(const char *filename, int dictionary_size, FILE *fp, struct file_header* head) 
-{
-    
-    int crc_offset = 0;
+int write_header(FILE *fp, struct file_header *header) {
 
-    get_header(filename, head, dictionary_size);
+	write_data((void*)&(header->compression_algorithm_code), 1, sizeof(int8_t), fp);
 
-    write_data((void*)&(head->compression_algorithm_code), 1, sizeof(int8_t), fp);
- 
-    write_data((void*)&(head->dictionary_size), 1, sizeof(int32_t), fp);
- 
-    write_data((void*)&(head->symbol_size), 1, sizeof(int32_t), fp);
+	write_data((void*)&(header->dictionary_size), 1, sizeof(int32_t), fp);
 
-    write_data((void*)&(head->filename_len), 1, sizeof(int32_t), fp);
+	write_data((void*)&(header->symbol_size), 1, sizeof(int32_t), fp);
 
-    write_data((void*)(head->filename), 1, head->filename_len, fp);
-  
-    write_data((void*)&(head->file_size), 1, sizeof(off_t), fp);
+	write_data((void*)&(header->filename_len), 1, sizeof(int32_t), fp);
 
-    write_data((void*)&(head->last_modification_time), 1, sizeof(time_t), fp);
+	write_data((void*)(header->filename), 1, header->filename_len, fp);
 
-    crc_offset = ftell(fp);
+	write_data((void*)&(header->file_size), 1, sizeof(off_t), fp);
 
-    // CRC
-    write_data((void*)&(head->checksum), 1, sizeof(crc), fp);
-    
-    write_data((void*)&(head->compressed), 1, sizeof(uint8_t), fp);
+	write_data((void*)&(header->last_modification_time), 1, sizeof(time_t), fp);
 
-    return crc_offset;
+	// CRC
+	write_data((void*)&(header->checksum), 1, sizeof(crc), fp);
 
+	write_data((void*)&(header->compressed), 1, sizeof(uint8_t), fp);
+
+	// Header will be not greater than 2^16 - 1
+	return (int) ftell(fp);
 }
 
 uint8_t check_size(FILE* compressed_file, off_t original_size, int header_size)
@@ -284,6 +278,10 @@ void check_decompression(FILE* fp, off_t original_size, crc original_crc, crc co
 		printf("error during decompression\nOriginal crc was %u, computed crc is %u\n", original_crc, computed_crc);
 	}
 }
+
+
+
+
 
 
 
