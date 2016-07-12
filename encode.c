@@ -34,47 +34,57 @@ int bitio_close(struct bitio* b)
 		errno = EINVAL;
 		return -1;
 	}
-	if(b->mode == 1 && b->wp > 0){
-		if(fwrite ((void*)&b->data, 1, (b->wp + 7)/8, b->f) != 1){  //FIXME
-			ret = -1;
-		}
-	}
 	fclose(b->f);
 	bzero(b, sizeof(*b));
 	free(b);
 	return ret;
 }
 
-int compressor_bitio_close(struct bitio* b, unsigned char* content, off_t original_size, int header_size)
+int compressor_bitio_close(struct bitio *b, unsigned char *content, struct file_header *header, int header_size,
+						   const char *output_file)
 {
-	int ret = 0;
-	uint8_t is_compressed;
 
 	if(b == NULL){
 		errno = EINVAL;
 		return -1;
 	}
 	if(b->mode == 1 && b->wp > 0){
-		//if(fwrite ((void*)&b->data, 1, (b->wp + 7)/8, b->f) != 1){  //FIXME
-		if(fwrite ((void*)&b->data, 1, (b->wp + 7)/8, b->f) != (b->wp + 7)/8){  
-			ret = -1;
+		if(fwrite ((void*)&b->data, 1, (b->wp + 7)/8, b->f) != (b->wp + 7)/8){
+			return -1;
 		}
 	}
 
-	is_compressed =  check_size(b->f, original_size, header_size);
-	fseek(b->f, header_size - sizeof(uint8_t), SEEK_SET);
-    	if (fwrite(&is_compressed, sizeof(uint8_t), 1, b->f) != 1){
-		ret = -1;
+	header->compressed = check_size(b->f, header->file_size, header_size);
+
+	if(header->compressed == 0){
+		// Trick to overwrite file
+		fclose(b->f);
+		b->f = fopen(output_file, "w");
+		if (b->f == NULL)
+			return -1;
+
+		write_header(b->f, header);
+		if (fwrite(content, header->file_size, 1, b->f) != 1)
+			return -1;
+
+	} else {
+
+		fseek(b->f, header_size - sizeof(crc) - sizeof(uint8_t), SEEK_SET);
+
+		//Attach CRC
+		if (fwrite(&header->checksum, sizeof(crc), 1, b->f) != 1)
+			return -1;
+
+		//Attach compressed flag
+		if (fwrite(&header->compressed, sizeof(uint8_t), 1, b->f) != 1)
+			return -1;
+
 	}
-	if(is_compressed == 0){
-		if (fwrite(content, original_size, 1, b->f) != 1){
-			ret = -1;
-		}
-	}
+
 	fclose(b->f);
 	bzero(b, sizeof(*b));
 	free(b);
-	return ret;
+	return 0;
 }
 
 int write_code(struct bitio* b, int size, uint64_t data){
@@ -155,9 +165,4 @@ u_int compute_bit_to_represent(int arg){
     
     return (u_int) ceil(log(arg) / log(2));
    
-}
-
-int end_compressed_file(){
-    // TODO Chiudere la bitio con params.eof_code e padding
-    // RETURN CODE -1 se problemi, 0 se ok
 }

@@ -1,8 +1,5 @@
 #include "encode.h"
 #include "decompressor.h"
-#include "file_io.h"
-#include "compressor.h"
-
 
 
 void decompressor_init(struct decompressor_data *decompressor, int dictionary_size, uint8_t already_init) {
@@ -79,16 +76,14 @@ void decompress(const char *input_filename, const char *output_file_name) {
 
     FILE* output_file;
     int stop = 0;
-    unsigned char extracted_parent = 0, extracted_c;
+    unsigned char extracted_parent = 0;
     node current_node, previous_node = ROOT;
     node index = 0;
     int ret;
     int32_t dictionary_size;
-    uint64_t is_compressed;
     struct bitio* bitio;
     struct decompressor_data * decompressor = calloc(1, sizeof(struct decompressor_data));
     struct file_header* header = calloc(1, sizeof(struct file_header));
-    uint8_t end_update = 0;
     crc remainder = 0;
     int result;
 
@@ -197,22 +192,19 @@ void decompress(const char *input_filename, const char *output_file_name) {
 			emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent, &remainder);
 
 			// Aggiungo nodo al dizionario
-			if (previous_node != ROOT && decompressor->node_count < dictionary_size - 1)
-				add_node(decompressor, previous_node, extracted_parent);
+			if (previous_node != ROOT){
+				if (decompressor->node_count < dictionary_size - 1)
+					add_node(decompressor, previous_node, extracted_parent);
+				else {
+					decompressor->node_count = EOF_CODE;
+				}
+			}
+
 
 		}
 
 		// Imposto il nodo ricevuto come prossimo nodo al quale aggiungeremo il figlio
 		previous_node = current_node;
-
-		// Dizionario pieno: svuotare tutto
-		if (decompressor->node_count >= dictionary_size) {
-		  /*free(decompressor->dictionary);
-			decompressor_init(decompressor, dictionary_size, 0);*/
-			previous_node = ROOT;
-		  //end_update = 1;
-
-		}
 
     }
 

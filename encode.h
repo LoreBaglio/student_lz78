@@ -60,8 +60,7 @@ Errors:
 */
 int bitio_close(struct bitio*);
 
-int compressor_bitio_close(struct bitio*, unsigned char* content, off_t original_size, int header_size);
+int compressor_bitio_close(struct bitio *, unsigned char *content, struct file_header *header, int header_size, const char *output_file);
 u_int compute_bit_to_represent(int);
-int end_compressed_file();
 
 #endif //STUDENT_LZ78_SYMBOL_IO_H
