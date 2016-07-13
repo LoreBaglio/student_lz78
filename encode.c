@@ -81,7 +81,11 @@ int compressor_bitio_close(struct bitio *b, unsigned char *content, struct file_
 
 	}
 
+	struct file_header* header1 = calloc(1, sizeof(struct file_header));
+
+
 	fclose(b->f);
+
 	bzero(b, sizeof(*b));
 	free(b);
 	return 0;

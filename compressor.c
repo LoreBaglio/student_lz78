@@ -15,7 +15,6 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     struct table_key *node_key;
     crc remainder = 0;
     struct bitio *bitio;
-    int crc_header_offset = 0;
     int ret;
     int header_size;
     struct file_header *header = (struct file_header *) malloc(sizeof(struct file_header));
@@ -60,8 +59,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
             // Incremental CRC, computed during the compression cycle and attached to the header at the end
             step_crc(&remainder, current_symbol);
             
-	    // memorizzo il simbolo letto nel caso in cui non debba inviare il file compresso ma quello originale 
-	    //FIXME o invece è meglio riaprire il file e rileggerlo?
+	    // memorizzo il simbolo letto nel caso in cui non debba inviare il file compresso ma quello originale
             file_content[count++] = current_symbol;		
 
             //Prepare key for lookup
@@ -115,14 +113,8 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     parent_node = EOF_CODE;
     write_code(bitio, bits_per_code, parent_node);
 
-    //Attach CRC
-    fseek(bitio->f, crc_header_offset, SEEK_SET);
-    write_data(&remainder, 1, sizeof(crc), bitio->f);
-
-
-    fseek(bitio->f, 0, SEEK_END);
     header->checksum = remainder;
-    //FIXME la bitio_close potrebbe fare una write e cambiare la dimensione del file compresso ho pensato di controllare la dimensione all'interno della close()
+
     if(compressor_bitio_close(bitio, file_content, header, header_size, output_file_name) < 0){
 
         if(verbose_flag)
