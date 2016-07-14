@@ -30,7 +30,7 @@ struct stack
 };
 
 
-extern u_int bits_per_code;
+
 
 // Set by the CLI module
 extern int verbose_flag;

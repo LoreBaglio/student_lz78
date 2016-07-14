@@ -14,7 +14,7 @@
 #define ROOT 0
 #define ASCII_ALPHABET 1     // Assumption for the project: symbols are characters
 
-u_int bits_per_code; // Number of bits for representing a node of the dictionary
+
 
 // Typedef for type of node counters
 typedef uint64_t node;

@@ -13,7 +13,7 @@ struct compressor_data {
     node node_count;
 };
 
-extern u_int bits_per_code;
+
 extern int verbose_flag;
 
 void compress(const char*,const char*,int);

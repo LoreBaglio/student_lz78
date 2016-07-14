@@ -8,6 +8,8 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
     FILE *input_fp;
 
+    u_int bits_per_code;
+
     // Variables for each step of lookup
     node parent_node = ROOT,child_node;
     uint8_t found;
@@ -20,6 +22,9 @@ void compress(const char * input_filename, const char* output_file_name, int dic
     struct file_header *header = (struct file_header *) malloc(sizeof(struct file_header));
     unsigned char* file_content;
     int count = 0;
+
+     // Set encoding number of bits 
+    bits_per_code = compute_bit_to_represent(dictionary_size);
 
     // Prepare all characters as first children of the root of the tree
     dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
@@ -59,7 +64,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
             // Incremental CRC, computed during the compression cycle and attached to the header at the end
             step_crc(&remainder, current_symbol);
             
-	    // memorizzo il simbolo letto nel caso in cui non debba inviare il file compresso ma quello originale
+	    
             file_content[count++] = current_symbol;		
 
             //Prepare key for lookup
@@ -156,8 +161,7 @@ void dictionary_init(struct compressor_data *compressor, int symbol_alphabet, in
     // Dictionary is considered full when the next node to be created is 2^N - 1.
     // That code is reserved for END_OF_FILE code
 
-    // Set encoding number of bits and eof code
-    bits_per_code = compute_bit_to_represent(dictionary_size);
+   
 
     // Prepare all first children (256 Ascii Symbols)
     unsigned char child_symbol;

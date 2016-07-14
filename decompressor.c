@@ -102,7 +102,8 @@ void decompress(const char *input_filename, const char *output_file_name) {
 	// It's the first symbol of the symbol sequence corresponding to the last read code
     unsigned char extracted_parent_symbol = 0;
 
-
+	// Number of bits to represent a node of the dictionary
+	u_int bits_per_code;
 
 	// CRC updated step-by-step during decompression cycle
     crc remainder = 0;
