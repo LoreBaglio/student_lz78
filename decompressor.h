@@ -1,4 +1,3 @@
-
 #ifndef STUDENT_LZ78_DECOMPRESSOR_H
 #define STUDENT_LZ78_DECOMPRESSOR_H
 
@@ -14,8 +13,10 @@ struct elem{
 	node parent;
 };
 
+/* Dictionary in decompression is an array of elem. It's accessed in reverse order (from the leaf to the root)
+w.r.t the compressor dictionary (from the root to the leaf)
+*/
 struct decompressor_data{
-
 	struct elem* dictionary;
 	node node_count;
 };
@@ -30,8 +31,11 @@ struct stack
 
 
 extern u_int bits_per_code;
+
+// Set by the CLI module
 extern int verbose_flag;
 
+// Main Functions
 void decompressor_init(struct decompressor_data* decompressor, int dictionary_size);
 void decompress(const char * input_filename, const char * output_file_name);
 void emit_string(FILE *out, struct elem* dictionary, struct stack* s, node index, unsigned char *parent, crc* remainder);
