@@ -5,6 +5,7 @@ lzw_codec compresses or decompresses a file using LZW algorithm.
 lzw_codec -c|-d [-l size][-v] -i filename -o filename
 
 OPTIONS
+
 	-c 
 	    compress
 
