@@ -58,6 +58,8 @@ int main (int argc, char **argv){
 
 	opterr = 0;
 
+	// Parsing options
+
 	while ((current_option = getopt (argc, argv, "cdl:i:o:v")) != -1) {
 
 		switch (current_option) {
@@ -113,7 +115,7 @@ int main (int argc, char **argv){
 		exit(1);
 	}
 
-
+	// If compressor flag is set, check correctness and start compressor
 	if (compressor_flag){
 
 		if (verbose_flag)
@@ -142,7 +144,8 @@ int main (int argc, char **argv){
 				printf("Dictionary size: %d\n",dictionary_size);
 
 
-			//call compressor
+			// CALL COMPRESSOR
+
 			compress(input_value, output_value, dictionary_size);
 
 		} else {
@@ -156,6 +159,7 @@ int main (int argc, char **argv){
 			exit(1);
 		}
 
+	// Otherwise, if decompressor_flag is set, check correctness and start decompressor
 	} else if (decompressor_flag) {
 
 		if (verbose_flag)
@@ -169,7 +173,8 @@ int main (int argc, char **argv){
 				printf("You cannot specify the dictionary size during the decompression phase: it will be ignored.\n");
 		
 
-			//call decompressor
+			// CALL DECOMPRESSOR
+
 			decompress(input_value, output_value);
 
 		} else {

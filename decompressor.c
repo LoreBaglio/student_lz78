@@ -32,9 +32,9 @@ void decompressor_init(struct decompressor_data *decompressor, int dictionary_si
     	}
 }
 
-// ===========================================================
+
 // STACK (Used to print in reverse order branch of characters)
-// ===========================================================
+
 /*
  * Init stack
  */
@@ -77,8 +77,6 @@ unsigned char stack_pop(struct stack* s) {
 
     	return s->stk[s->top--];
 }
-
-// ===========================================================
 
 // Decompressor main function using LZW Algorithm
 void decompress(const char *input_filename, const char *output_file_name) {
@@ -186,9 +184,8 @@ void decompress(const char *input_filename, const char *output_file_name) {
     	// Set encoding number of bits (to avoid waste of bits)
     	bits_per_code = compute_bit_to_represent(dictionary_size);
 
-	// ================================
+
 	// DECOMPRESSION CYCLE
-	// ================================
 
     	while(!feof(bitio->f) || (stop != 0)){
 
@@ -257,9 +254,7 @@ void decompress(const char *input_filename, const char *output_file_name) {
 
     	}
 
-	// =====================
 	// FINAL OPERATIONS
-	// =====================
 
 	// Check size of obtained file and checksum
     	check_decompression(output_file, header->file_size, header->checksum, remainder);

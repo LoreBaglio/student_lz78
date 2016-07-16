@@ -1,12 +1,5 @@
-//
-// Created by lorenzo on 19/06/16.
-//
-
 #ifndef STUDENT_LZ78_HASH_TABLE_H
 #define STUDENT_LZ78_HASH_TABLE_H
-
-#endif //STUDENT_LZ78_HASH_TABLE_H
-
 
 #include <stdio.h>
 #include <stdint.h>
@@ -49,3 +42,6 @@ int compare_key(struct table_key*, struct table_key*);
 struct entry_table* lookup(struct hash_table*, struct table_key*);
 int count_digits(int);
 int select_hash_size(int);
+
+
+#endif //STUDENT_LZ78_HASH_TABLE_H

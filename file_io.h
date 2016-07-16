@@ -1,9 +1,10 @@
+#ifndef STUDENT_LZ78_FILE_IO_H
+#define STUDENT_LZ78_FILE_IO_H
+
 #define LZ_78_CODE 78
 #define SYMBOL_SIZE 8
 #define READ 0
 #define WRITE 1
-#ifndef STUDENT_LZ78_FILE_IO_H
-#define STUDENT_LZ78_FILE_IO_H
 
 #include <stdio.h>
 #include <string.h>

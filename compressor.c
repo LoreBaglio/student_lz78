@@ -1,7 +1,9 @@
 #include "compressor.h"
 
 
-
+/**
+* This function is called by main program and compress the file given as an input
+*/
 void compress(const char * input_filename, const char* output_file_name, int dictionary_size) {
 
     	struct compressor_data *compressor = malloc(sizeof(struct compressor_data));
@@ -39,6 +41,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 	exit(1);
 	}
 
+	// Open input file (which will be compressed)
 	input_fp = open_file(input_filename, READ);
 
 	if (input_fp == NULL) {
@@ -88,6 +91,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 			    exit(1);
 			}
 
+			// Check if dictonary is full
 			if (compressor->node_count >= dictionary_size - 1) {
 				
 			    destroy(compressor->dictionary);
@@ -120,7 +124,8 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 	write_code(bitio, bits_per_code, parent_node);
 
 	header->checksum = remainder;
-
+	
+	// Perform final operations on output file and close bitio
 	if(compressor_bitio_close(bitio, file_content, header, header_size, output_file_name) < 0){
 		
 		if(verbose_flag)
@@ -128,6 +133,7 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 	    	exit(1);
 	}
 
+	// Free resources
 	fclose(input_fp);
 
 	free(file_content);

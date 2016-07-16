@@ -1,3 +1,6 @@
+#ifndef STUDENT_LZ78_SYMBOL_IO_H
+#define STUDENT_LZ78_SYMBOL_IO_H
+
 #include <math.h>      /* log */
 #include <unistd.h>
 #include <stdlib.h>
@@ -6,9 +9,6 @@
 #include <stdio.h>
 #include <strings.h>
 #include "file_io.h"
-
-#ifndef STUDENT_LZ78_SYMBOL_IO_H
-#define STUDENT_LZ78_SYMBOL_IO_H
 
 #define EOF_CODE 257
 #define ROOT 0
