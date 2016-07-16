@@ -282,7 +282,7 @@ void decompress(const char *input_filename, const char *output_file_name) {
     free(s->stk);
     free(s);
 
-	free(header->filename);
+    free((char*)header->filename);
     bzero(header, sizeof(struct file_header));
     free(header);
 
