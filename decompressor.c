@@ -163,7 +163,7 @@ void decompress(const char *input_filename, const char *output_file_name) {
 
 		// Free resources
 		free(text);
-		free(header->filename);
+		free((char*)header->filename);
 		free(header);
 		bitio_close(bitio);
 		fclose(output_file);

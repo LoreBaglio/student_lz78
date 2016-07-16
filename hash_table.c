@@ -186,7 +186,7 @@ void print_table(struct hash_table * hash_table) {
             struct table_key *key = entry->key;
 
             int value = entry->value;
-            printf("%d) Key: %d-%x, Value: %d\n", i, key->father, key->code, value);
+            printf("%d) Key: %ld-%x, Value: %d\n", i, key->father, key->code, value);
             entry = entry->next;
 
         }
@@ -205,7 +205,7 @@ int hash(struct table_key *key, int size) {
 
     // 1 (key->code) + '\0'
     char* real_key = calloc(1, digits_of_father + 2);
-    sprintf(real_key, "%d%c", key->father, key->code);
+    sprintf(real_key, "%ld%c", key->father, key->code);
     real_key[digits_of_father + 1] = '\0';
 
     /* Convert our string to an integer */
