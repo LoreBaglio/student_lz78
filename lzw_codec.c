@@ -15,7 +15,7 @@ OPTIONS
 	    specify the dictionary size of the compressor
 
 	-v
-	    explain what is being done
+	    verbose mode
 
 	-i filename
 	    specify the input file (the file that will be compressed/decompressed)
