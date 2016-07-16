@@ -201,12 +201,13 @@ int hash(struct table_key *key, int size) {
 
     unsigned long int hashval = 0;
     int i = 0;
-    int digits_of_father = count_digits(key->father);
+    int digits_of_father = count_digits(key->father); 
 
+    
     // 1 (key->code) + '\0'
     char* real_key = calloc(1, digits_of_father + 2);
     sprintf(real_key, "%ld%c", key->father, key->code);
-    real_key[digits_of_father + 1] = '\0';
+    real_key[digits_of_father + 1] = '\0'; 
 
     /* Convert our string to an integer */
     while( hashval < ULONG_MAX && i < strlen( real_key  ) ) {
@@ -220,6 +221,9 @@ int hash(struct table_key *key, int size) {
 }
 
 int count_digits(int n) {
+
+    if(n == 0)
+	return 1;
 
     return ceil(log10(n + 1));
 }

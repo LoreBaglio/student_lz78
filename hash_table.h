@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <math.h>
 #include "encode.h"
 
 // Struct which defines table key
