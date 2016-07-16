@@ -4,36 +4,36 @@
 
 void print_header(struct file_header* header){
 
-    printf("Compression Algorithm Code: %d\n",header->compression_algorithm_code);
-    printf("Dictionary size: %d\n",header->dictionary_size);
-    printf("Symbol size: %d\n",header->symbol_size);
-    printf("File Name: %s\n",header->filename);
-    printf("File Size: %d\n",(int)header->file_size);
-    printf("Last Modification: %s",ctime(&header->last_modification_time));
-    printf("Checksum: %u\n",header->checksum);
-    printf("Compressed: %d\n", header->compressed);
+	printf("Compression Algorithm Code: %d\n",header->compression_algorithm_code);
+	printf("Dictionary size: %d\n",header->dictionary_size);
+	printf("Symbol size: %d\n",header->symbol_size);
+	printf("File Name: %s\n",header->filename);
+	printf("File Size: %d\n",(int)header->file_size);
+	printf("Last Modification: %s",ctime(&header->last_modification_time));
+	printf("Checksum: %u\n",header->checksum);
+	printf("Compressed: %d\n", header->compressed);
 }
 
 void get_header(const char* filename, struct file_header* header,int dictionary_size) {
 
-    struct stat file_stat;
-    int ret;
+	struct stat file_stat;
+	int ret;
 
-    ret = stat(filename,&file_stat);
-    if(ret < 0){
-        printf("Error in reading metadata of the file %s\n",filename);
-        exit(1);
-    }
+	ret = stat(filename,&file_stat);
+	if(ret < 0){
+		printf("Error in reading metadata of the file %s\n",filename);
+		exit(1);
+	}
 
-    header->compression_algorithm_code = LZ_78_CODE;
-    header->dictionary_size = dictionary_size;
-    header->symbol_size = SYMBOL_SIZE;
-    header->filename = filename;
-    header->filename_len = strlen(filename) + 1;
-    header->file_size = file_stat.st_size;
-    header->last_modification_time = file_stat.st_atim.tv_sec;
-    header->checksum = 0;       //Checksum will be set at the end of compression
-    header->compressed = 0;     //Compressed flag will be set at the end of compression
+	header->compression_algorithm_code = LZ_78_CODE;
+	header->dictionary_size = dictionary_size;
+	header->symbol_size = SYMBOL_SIZE;
+	header->filename = filename;
+	header->filename_len = strlen(filename) + 1;
+	header->file_size = file_stat.st_size;
+	header->last_modification_time = file_stat.st_atim.tv_sec;
+	header->checksum = 0;       //Checksum will be set at the end of compression
+	header->compressed = 0;     //Compressed flag will be set at the end of compression
 }
 
 void compare_filenames(const char* input_name, const char* output_name)

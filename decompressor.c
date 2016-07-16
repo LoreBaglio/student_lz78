@@ -6,30 +6,30 @@
  */
 void decompressor_init(struct decompressor_data *decompressor, int dictionary_size) {
 
-    unsigned char c = 0;
-    uint16_t i;
-    uint8_t end_loop = 0;
+    	unsigned char c = 0;
+    	uint16_t i;
+    	uint8_t end_loop = 0;
 
-    // Start to count new nodes from EOF (excluded) (0 root, 1-256 first children, 257 EOF)
-    decompressor -> node_count = EOF_CODE;
+    	// Start to count new nodes from EOF (excluded) (0 root, 1-256 first children, 257 EOF)
+    	decompressor->node_count = EOF_CODE;
 
 	decompressor->dictionary = (struct elem *) calloc(dictionary_size, sizeof(struct elem));
 
-    //Init Root Node
-    decompressor->dictionary[0].c = '\0';
-    decompressor->dictionary[0].parent = EOF_CODE;
+    	//Init Root Node
+    	decompressor->dictionary[0].c = '\0';
+    	decompressor->dictionary[0].parent = EOF_CODE;
 
-    //Init array with Single Character nodes
-    for (i = 1; !end_loop; i++) {
+    	//Init array with Single Character nodes
+    	for (i = 1; !end_loop; i++) {
 
-        decompressor->dictionary[i].c = c;
-        decompressor->dictionary[i].parent = ROOT;
+        	decompressor->dictionary[i].c = c;
+       		decompressor->dictionary[i].parent = ROOT;
 
-		if (c == 255)
-			end_loop = 1;
-		else
-			c++;
-    }
+			if (c == 255)
+				end_loop = 1;
+			else
+				c++;
+    	}
 }
 
 // ===========================================================
@@ -55,14 +55,14 @@ void stack_init(struct stack* s, int size) {
  */
 int stack_push(struct stack* s, unsigned char const c) {
 
-    if (s->top == s->size - 1){
-	printf("Stack is full\n");
-	exit(1);
-    }
+    	if (s->top == s->size - 1){
+		printf("Stack is full\n");
+		exit(1);
+    	}
 
-    s->stk[++s->top] = c;
+    	s->stk[++s->top] = c;
 
-    return PUSH_SUCCESSFUL;
+    	return PUSH_SUCCESSFUL;
 }
 
 /*
@@ -70,12 +70,12 @@ int stack_push(struct stack* s, unsigned char const c) {
  */
 unsigned char stack_pop(struct stack* s) {
 
-    if (s->top == -1) {
-	printf("Stack is empty\n");
-	exit(1);
-    }
+    	if (s->top == -1) {
+		printf("Stack is empty\n");
+		exit(1);
+    	}
 
-    return s->stk[s->top--];
+    	return s->stk[s->top--];
 }
 
 // ===========================================================
@@ -83,8 +83,9 @@ unsigned char stack_pop(struct stack* s) {
 // Decompressor main function using LZW Algorithm
 void decompress(const char *input_filename, const char *output_file_name) {
 
+
 	// I/O Structures
-    FILE* output_file;
+    	FILE* output_file;
 	struct bitio* bitio;
 	struct file_header* header = calloc(1, sizeof(struct file_header));
 
@@ -100,43 +101,43 @@ void decompress(const char *input_filename, const char *output_file_name) {
 	node index = 0;
 
 	// It's the first symbol of the symbol sequence corresponding to the last read code
-    unsigned char extracted_parent_symbol = 0;
+    	unsigned char extracted_parent_symbol = 0;
 
 	// Number of bits to represent a node of the dictionary
 	u_int bits_per_code;
-
+	
 	// CRC updated step-by-step during decompression cycle
-    crc remainder = 0;
+    	crc remainder = 0;
+	
+    	//Init bitio (with input file)
+    	bitio = bitio_open(input_filename,READ);
+    	if (bitio == NULL){
+		printf("Cannot open input file %s\n", input_filename);
+	
+			if(verbose_flag)
+				printf("Decompression interrupted\n");
 
-    //Init bitio (with input file)
-    bitio = bitio_open(input_filename,READ);
-    if (bitio == NULL){
-        printf("Cannot open input file %s\n", input_filename);
-
-		if(verbose_flag)
-			printf("Decompression interrupted\n");
-
-		exit(1);
-    }
+			exit(1);
+    	}
 
 	// Open output file
-    output_file = open_file(output_file_name, WRITE);
+    	output_file = open_file(output_file_name, WRITE);
 
-    if (output_file == NULL) {
-        printf("Cannot open file %s in write mode\n", output_file_name);
+    	if (output_file == NULL) {
+        	printf("Cannot open file %s in write mode\n", output_file_name);
 
-		if(verbose_flag)
-			printf("Decompression interrupted\n");
+			if(verbose_flag)
+				printf("Decompression interrupted\n");
 
-		exit(1);
-    }
+			exit(1);
+    	}
 
 	// Get the header and check if the file is compressed or not
-    read_header(bitio->f, header);
-    is_compressed = check_header(header);
+    	read_header(bitio->f, header);
+    	is_compressed = check_header(header);
 
 	// Error
-    if(is_compressed == -1){
+    	if(is_compressed == -1){
 
 		printf("Decompression failed\n");
 
@@ -144,11 +145,11 @@ void decompress(const char *input_filename, const char *output_file_name) {
 				printf("error: input file is corrupted\n");
 
 		exit(1);
-    }
+    	}
 
 	// File is not compressed. It's the original plain file
-    if(is_compressed == 0){
-
+    	if(is_compressed == 0){
+		
 		// Read body of input file and check CRC
 		crc checksum;
 		unsigned char* text = (unsigned char*)malloc(header->file_size);
@@ -169,27 +170,27 @@ void decompress(const char *input_filename, const char *output_file_name) {
 		fclose(output_file);
 
 		return;
-    }
+    	}
 
-    // Get the dictionary size from the header of the compressed file
-    dictionary_size = header -> dictionary_size;
+    	// Get the dictionary size from the header of the compressed file
+    	dictionary_size = header -> dictionary_size;
 
-    // Init stack for decompression
-    struct stack* s = calloc(1, sizeof(struct stack));
-    stack_init(s, dictionary_size);
+	// Init stack for decompression
+    	struct stack* s = calloc(1, sizeof(struct stack));
+    	stack_init(s, dictionary_size);
 
 	// Init decompressor structure
 	decompressor = calloc(1, sizeof(struct decompressor_data));
-    decompressor_init(decompressor, dictionary_size);
+    	decompressor_init(decompressor, dictionary_size);
 
-    // Set encoding number of bits (to avoid waste of bits)
-    bits_per_code = compute_bit_to_represent(dictionary_size);
+    	// Set encoding number of bits (to avoid waste of bits)
+    	bits_per_code = compute_bit_to_represent(dictionary_size);
 
 	// ================================
 	// DECOMPRESSION CYCLE
 	// ================================
 
-    while(!feof(bitio->f) || (stop != 0)){
+    	while(!feof(bitio->f) || (stop != 0)){
 
 		// 1. Read the Code <NODE_CODE>
 		ret = read_code(bitio, bits_per_code, &current_node);
@@ -254,37 +255,37 @@ void decompress(const char *input_filename, const char *output_file_name) {
 		// with extracted_parent_symbol as link symbol.
 		previous_node = current_node;
 
-    }
+    	}
 
 	// =====================
 	// FINAL OPERATIONS
 	// =====================
 
 	// Check size of obtained file and checksum
-    check_decompression(output_file, header->file_size, header->checksum, remainder);
+    	check_decompression(output_file, header->file_size, header->checksum, remainder);
 
 	// Close files and free resources
-    if (bitio_close(bitio) < 0){
+    	if (bitio_close(bitio) < 0){
 
-        if(verbose_flag)
-            printf("error: closure of the input file failed\n");
+        	if(verbose_flag)
+            		printf("error: closure of the input file failed\n");
 
-        exit(1);
-    }
+        	exit(1);
+    	}
 
-    fclose(output_file); 
+    	fclose(output_file); 
 
-    //bzero(decompressor, sizeof(struct decompressor_data));
+    	bzero(decompressor, sizeof(struct decompressor_data));
 	free(decompressor->dictionary);
-    free(decompressor);
+    	free(decompressor);
 
-    bzero(s->stk, s->size * sizeof(char));
-    free(s->stk);
-    free(s);
+    	bzero(s->stk, s->size * sizeof(char));
+    	free(s->stk);
+    	free(s);
 
-    free((char*)header->filename);
-    bzero(header, sizeof(struct file_header));
-    free(header);
+    	free((char*)header->filename);
+    	bzero(header, sizeof(struct file_header));
+    	free(header);
 
 }
 /*

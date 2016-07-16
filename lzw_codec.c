@@ -39,162 +39,152 @@ OPTIONS
 // Global variable
 int verbose_flag = 0;
 
-int main (int argc, char **argv)
-{
-  int compressor_flag = 0;
-  int decompressor_flag = 0;
+int main (int argc, char **argv){
+	int compressor_flag = 0;
+	int decompressor_flag = 0;
 
-  int length_flag = 0;
-  char *length_value = NULL;
-  
-  int input_flag = 0;
-  char *input_value = NULL;
-  
-  int output_flag = 0;
-  char *output_value = NULL;
+	int length_flag = 0;
+	char *length_value = NULL;
 
-  int index;
-  int current_option;
-  int dictionary_size;
+	int input_flag = 0;
+	char *input_value = NULL;
 
-  opterr = 0;
+	int output_flag = 0;
+	char *output_value = NULL;
 
-  while ((current_option = getopt (argc, argv, "cdl:i:o:v")) != -1) {
-    switch (current_option) {
-        case 'c':
-        compressor_flag = 1;
-        break;
+	int index;
+	int current_option;
+	int dictionary_size;
 
-      case 'd':
-        decompressor_flag = 1;
-        break;
+	opterr = 0;
 
-      case 'l':
-        length_flag = 1;
-        length_value = optarg;
-        break;
+	while ((current_option = getopt (argc, argv, "cdl:i:o:v")) != -1) {
 
-      case 'i':
-        input_flag = 1;
-        input_value = optarg;
-        break;
+		switch (current_option) {
+			case 'c':
+			compressor_flag = 1;
+			break;
 
-      case 'o':
-        output_flag = 1;
-        output_value = optarg;
-        break;
+			case 'd':
+			decompressor_flag = 1;
+			break;
 
-      case 'v':
-        verbose_flag = 1;
-        break;
+			case 'l':
+			length_flag = 1;
+			length_value = optarg;
+			break;
 
-      case '?':
-        if (optopt == 'i' || optopt == 'o' || optopt == 'l' )
-          fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+			case 'i':
+			input_flag = 1;
+			input_value = optarg;
+			break;
 
-        else if (isprint (optopt))
-          fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+			case 'o':
+			output_flag = 1;
+			output_value = optarg;
+			break;
 
-        else
-          fprintf(stderr,"Unknown option character `\\x%x'.\n", optopt);
-            return 1;
+			case 'v':
+			verbose_flag = 1;
+			break;
 
-      default:
-        exit(1);
-    }
-  }
+			case '?':
+			if (optopt == 'i' || optopt == 'o' || optopt == 'l' )
+			  fprintf(stderr, "Option -%c requires an argument.\n", optopt);
 
-  for (index = optind; index < argc; index++)
-    printf ("Non-option argument %s\n", argv[index]);
+			else if (isprint (optopt))
+			  fprintf(stderr, "Unknown option `-%c'.\n", optopt);
 
-  if (compressor_flag && decompressor_flag) {
-    printf("You cannot compress and decompress at the same time!\n");
-    exit(1);
-  }
+			else
+			  fprintf(stderr,"Unknown option character `\\x%x'.\n", optopt);
+			    return 1;
+			break;
 
+			default:
+			exit(1);
+		}
+  	}
 
-  if (compressor_flag){
+	for (index = optind; index < argc; index++)
+		printf ("Non-option argument %s\n", argv[index]);
 
-    if (verbose_flag)
-      printf("Compression phase ----\n");
-
-    if (input_flag && output_flag){
-
-      compare_filenames(input_value, output_value);
-
-      if(length_flag){
-
-      	dictionary_size = atoi(length_value);
-       
-          if(dictionary_size < MIN_DICTIONARY_SIZE || dictionary_size > MAX_DICTIONARY_SIZE){
-            dictionary_size = DEFAULT_DICTIONARY_SIZE;
-
-	    if (verbose_flag)
-	      printf("The specified dictionary size is not valid. Default dictionary size will be used.\n");
-        }
-      }
-
-      else
-        dictionary_size = DEFAULT_DICTIONARY_SIZE;
-
-      if (verbose_flag)
-        printf("Dictionary size: %d\n",dictionary_size);
+	if (compressor_flag && decompressor_flag) {
+		printf("You cannot compress and decompress at the same time!\n");
+		exit(1);
+	}
 
 
-      //call compressor
-      compress(input_value, output_value, dictionary_size);
+	if (compressor_flag){
 
-    } else {
+		if (verbose_flag)
+			printf("Compression phase ----\n");
 
-      if(!input_flag){
+		if (input_flag && output_flag){
 
-        printf("Input file missing\nSpecify the input file with -i option, followed by name:\n -i <filename>\n");
-        exit(1);
-      }
-      else{
+			compare_filenames(input_value, output_value);
 
-        printf("Output file missing\nSpecify the output file with -o option, followed by name:\n -o <filename>\n");
-        exit(1);
-      }
-    }
+			if(length_flag){
 
-  } else if (decompressor_flag){
+				dictionary_size = atoi(length_value);
 
-    if (verbose_flag)
-      printf("Decompression phase ----\n");
+			  	if(dictionary_size < MIN_DICTIONARY_SIZE || dictionary_size > MAX_DICTIONARY_SIZE){
+			    		dictionary_size = DEFAULT_DICTIONARY_SIZE;
 
-    if (input_flag && output_flag){
+			    		if (verbose_flag)
+			      			printf("The specified dictionary size is not valid. Default dictionary size will be used.\n");
+				}
+			}
 
-      compare_filenames(input_value, output_value);
+			else
+				dictionary_size = DEFAULT_DICTIONARY_SIZE;
 
-      if(length_flag){
+			if (verbose_flag)
+				printf("Dictionary size: %d\n",dictionary_size);
 
-        if(verbose_flag)
 
-	  printf("You cannot specify the dictionary size during the decompression phase: it will be ignored.\n");
-      }
+			//call compressor
+			compress(input_value, output_value, dictionary_size);
 
-    //call decompressor
-    decompress(input_value, output_value);
+		} else {
 
-    } else {
+			if(!input_flag)
+				printf("Input file missing\nSpecify the input file with -i option, followed by name:\n -i <filename>\n");
+			
+			else 
+				printf("Output file missing\nSpecify the output file with -o option, followed by name:\n -o <filename>\n");
 
-        if(!input_flag){
+			exit(1);
+		}
 
-          printf("Input file missing\nSpecify the input file with -i option, followed by name:\n -i <filename>\n");
-          exit(1);
-        }
-        else{
+	} else if (decompressor_flag) {
 
-          printf("Output file missing\nSpecify the output file with -o option, followed by name:\n -o <filename>\n");
-          exit(1);
-        }
-    }
+		if (verbose_flag)
+			printf("Decompression phase ----\n");
 
-  } else {
+		if (input_flag && output_flag){
 
-    printf("The correct format is:\n./lz_command -c(-d) -i <inputfile> -o <outputfile>\n Optional flags are: \n-l (dictionary size)\n-v (for verbose mode)\n");
-  }
+			compare_filenames(input_value, output_value);
+
+			if(length_flag && verbose_flag)
+				printf("You cannot specify the dictionary size during the decompression phase: it will be ignored.\n");
+		
+
+			//call decompressor
+			decompress(input_value, output_value);
+
+		} else {
+
+			if(!input_flag)
+				printf("Input file missing\nSpecify the input file with -i option, followed by name:\n -i <filename>\n");
+			else
+				printf("Output file missing\nSpecify the output file with -o option, followed by name:\n -o <filename>\n");
+
+			exit(1);		
+    		}
+
+	} else 
+		printf("The correct format is:\n./lz_command -c(-d) -i <inputfile> -o <outputfile>\n Optional flags are: \n-l (dictionary size)\n-v (for verbose mode)\n");
+	
 
   return 0;
 }

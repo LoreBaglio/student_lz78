@@ -1,14 +1,24 @@
 # student_lzw
 This is a student version of lzw, used for didactic purpose only.
-Usage:
+lzw_codec compresses or decompresses a file using LZW algorithm.
 
-For compression:
-./lzw_codec -c -i inputfile -o outputfile
+lzw_codec -c|-d [-l size][-v] -i filename -o filename
 
-For decompression:
-./lzw_codec -d -i inputfile -o outputfile
+OPTIONS
+	-c 
+	    compress
 
-Optional flags:
+	-d
+	    decompress
 
--v is for verbose mode
--l let specify dictionary size
+	-l size
+	    specify the dictionary size of the compressor
+
+	-v
+	    explain what is being done
+
+	-i filename
+	    specify the input file (the file that will be compressed/decompressed)
+
+	-o filename
+	    specify the output file (the file that will contain the result of the compression/decompression)

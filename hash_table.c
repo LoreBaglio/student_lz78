@@ -6,30 +6,30 @@
  */
 struct hash_table *create(int size) {
 
-    struct hash_table* hash_table = NULL;
-    int i, array_size;
+	struct hash_table* hash_table = NULL;
+	int i, array_size;
 
-    hash_table = calloc(1, sizeof(struct hash_table));
-    if (hash_table == NULL){
-        printf("Failed to allocate memory\n");
-        return NULL;
-    }
+	hash_table = calloc(1, sizeof(struct hash_table));
+	if (hash_table == NULL){
+		printf("Failed to allocate memory\n");
+		return NULL;
+	}
 
 
-    array_size = select_hash_size(size);
-    hash_table->table = calloc(array_size , sizeof(struct entry_table*));
+	array_size = select_hash_size(size);
+	hash_table->table = calloc(array_size , sizeof(struct entry_table*));
 
-    if (hash_table->table == NULL){
-        printf("Failed to allocate memory\n");
-        return NULL;
-    }
+	if (hash_table->table == NULL){
+		printf("Failed to allocate memory\n");
+		return NULL;
+	}
 
-    hash_table->size = array_size;
+	hash_table->size = array_size;
 
-    for (i = 0; i < hash_table->size; i++)
-        hash_table->table[i] = NULL;
+	for (i = 0; i < hash_table->size; i++)
+		hash_table->table[i] = NULL;
 
-    return hash_table;
+	return hash_table;
 }
 
 /**
@@ -40,17 +40,17 @@ struct hash_table *create(int size) {
  */
 node get(struct hash_table* hashtable, struct table_key* key, uint8_t* found) {
 
-    struct entry_table* entry = lookup(hashtable, key);
+	struct entry_table* entry = lookup(hashtable, key);
 
-    if (entry) {
-        *found = 1;
-        return entry->value;
-    }
-    else
-        *found = 0;
+	if (entry) {
+		*found = 1;
+		return entry->value;
+	}
+	else
+		*found = 0;
 
-    // If not found, result has no meaning
-    return 0;
+	// If not found, result has no meaning
+	return 0;
 }
 
 /**
@@ -58,49 +58,49 @@ node get(struct hash_table* hashtable, struct table_key* key, uint8_t* found) {
  */
 node put(struct hash_table* hashtable, struct table_key* key, node value) {
 
-    int hash_index = hash(key, hashtable->size);
+	int hash_index = hash(key, hashtable->size);
 
-    struct entry_table* bin = hashtable->table[hash_index];
-    struct entry_table* last = NULL;
+	struct entry_table* bin = hashtable->table[hash_index];
+	struct entry_table* last = NULL;
 
-    struct entry_table* entry = lookup(hashtable, key);
+	struct entry_table* entry = lookup(hashtable, key);
 
-    // If null, there is no element with this key
-    if (entry == NULL){
+	// If null, there is no element with this key
+	if (entry == NULL){
 
-        // If bin is null, this is the first insert in the bucket of the hash table
-        if (bin == NULL){
-            bin = calloc(1, sizeof(struct entry_table));
+		// If bin is null, this is the first insert in the bucket of the hash table
+		if (bin == NULL){
+			bin = calloc(1, sizeof(struct entry_table));
 
-            bin->key = calloc(1, sizeof(struct table_key));
-            bin->key->father = key->father;
-            bin->key->code = key->code;
+			bin->key = calloc(1, sizeof(struct table_key));
+			bin->key->father = key->father;
+			bin->key->code = key->code;
 
-            bin->value = value;
-            bin->next = NULL;
-            hashtable->table[hash_index] = bin;
-        }
-        else {
-            // Else we create another entry_table and we do an head insert in
-            // the selected bucket.
-            entry = calloc(1, sizeof(struct entry_table));
-            entry->key = calloc(1, sizeof(struct table_key));
-            entry->key->father = key->father;
-            entry->key->code = key->code;
-            entry->value = value;
+			bin->value = value;
+			bin->next = NULL;
+			hashtable->table[hash_index] = bin;
+		}
+		else {
+			// Else we create another entry_table and we do an head insert in
+			// the selected bucket.
+			entry = calloc(1, sizeof(struct entry_table));
+			entry->key = calloc(1, sizeof(struct table_key));
+			entry->key->father = key->father;
+			entry->key->code = key->code;
+			entry->value = value;
 
-            // Head insert
-            last = bin->next;
-            bin->next = entry;
-            entry->next = last;
-        }
+			// Head insert
+			last = bin->next;
+			bin->next = entry;
+			entry->next = last;
+		}
 
-    } else {
-        // Otherwise, we simply update value
-        entry->value = value;
-    }
+	} else {
+		// Otherwise, we simply update value
+		entry->value = value;
+	}
 
-    return value;
+	return value;
 }
 
 
@@ -109,29 +109,27 @@ node put(struct hash_table* hashtable, struct table_key* key, node value) {
  */
 void destroy(struct hash_table *hash_table) {
 
-    int i = 0;
-    struct entry_table *next_entry;
+	int i = 0;
+	struct entry_table *next_entry;
 
-    for (i = 0; i < hash_table->size; i++) {
+	for (i = 0; i < hash_table->size; i++) {
 
-        struct entry_table *entry = hash_table->table[i];
+		struct entry_table *entry = hash_table->table[i];
 
-        if (entry == NULL)
-            continue;
+		if (entry == NULL)
+		    continue;
 
-        while (entry) {
+		while (entry) {
+		    next_entry = entry->next;
+		    free(entry->key);
+		    free(entry);
+		    entry = next_entry;
+		}
 
-            next_entry = entry->next;
-            free(entry->key);
-            free(entry);
-            entry = next_entry;
+	}
 
-        }
-
-    }
-
-    free(hash_table->table);
-    free(hash_table);
+	free(hash_table->table);
+	free(hash_table);
 
 }
 
@@ -140,10 +138,10 @@ void destroy(struct hash_table *hash_table) {
  */
 int compare_key(struct table_key * first, struct table_key * second) {
 
-    if (first->code == second->code && first->father == second->father)
-        return 1;
-    else
-        return 0;
+	if (first->code == second->code && first->father == second->father)
+		return 1;
+	else
+		return 0;
 }
 
 /**
@@ -152,23 +150,23 @@ int compare_key(struct table_key * first, struct table_key * second) {
  */
 struct entry_table* lookup(struct hash_table * hashtable, struct table_key * key) {
 
-    int hash_index = hash(key, hashtable->size);
+	int hash_index = hash(key, hashtable->size);
 
-    struct entry_table* result = NULL;
-    struct entry_table* bin = hashtable->table[hash_index];
+	struct entry_table* result = NULL;
+	struct entry_table* bin = hashtable->table[hash_index];
 
-    while (bin){
+	while (bin){
 
-        // Check if keys are equal
-        if (compare_key(bin->key, key)){
-            result = bin;
-            break;
-        }
+		// Check if keys are equal
+		if (compare_key(bin->key, key)){
+		    result = bin;
+		    break;
+		}
 
-        bin = bin->next;
-    }
+		bin = bin->next;
+	}
 
-    return result;
+	return result;
 }
 
 /**
@@ -176,21 +174,21 @@ struct entry_table* lookup(struct hash_table * hashtable, struct table_key * key
  */
 void print_table(struct hash_table * hash_table) {
 
-    int i;
-    for (i = 0; i < hash_table->size; i++) {
+	int i;
+	for (i = 0; i < hash_table->size; i++) {
 
-        struct entry_table *entry = hash_table->table[i];
+		struct entry_table *entry = hash_table->table[i];
 
-        while (entry) {
+		while (entry) {
 
-            struct table_key *key = entry->key;
+		    struct table_key *key = entry->key;
 
-            int value = entry->value;
-            printf("%d) Key: %ld-%x, Value: %d\n", i, key->father, key->code, value);
-            entry = entry->next;
+		    int value = entry->value;
+		    printf("%d) Key: %ld-%x, Value: %d\n", i, key->father, key->code, value);
+		    entry = entry->next;
 
-        }
-    }
+		}
+	}
 
 }
 
@@ -199,33 +197,33 @@ void print_table(struct hash_table * hash_table) {
  */
 int hash(struct table_key *key, int size) {
 
-    unsigned long int hashval = 0;
-    int i = 0;
-    int digits_of_father = count_digits(key->father); 
+	unsigned long int hashval = 0;
+	int i = 0;
+	int digits_of_father = count_digits(key->father); 
 
-    
-    // 1 (key->code) + '\0'
-    char* real_key = calloc(1, digits_of_father + 2);
-    sprintf(real_key, "%ld%c", key->father, key->code);
-    real_key[digits_of_father + 1] = '\0'; 
 
-    /* Convert our string to an integer */
-    while( hashval < ULONG_MAX && i < strlen( real_key  ) ) {
-        hashval = hashval << 8;
-        hashval += real_key[ i ];
-        i++;
-    }
-    free(real_key);
+	// 1 (key->code) + '\0'
+	char* real_key = calloc(1, digits_of_father + 2);
+	sprintf(real_key, "%ld%c", key->father, key->code);
+	real_key[digits_of_father + 1] = '\0'; 
 
-    return hashval % size;
+	/* Convert our string to an integer */
+	while( hashval < ULONG_MAX && i < strlen( real_key  ) ) {
+		hashval = hashval << 8;
+		hashval += real_key[ i ];
+		i++;
+	}
+	free(real_key);
+
+	return hashval % size;
 }
 
 int count_digits(int n) {
 
-    if(n == 0)
-	return 1;
+	if(n == 0)
+		return 1;
 
-    return ceil(log10(n + 1));
+	return ceil(log10(n + 1));
 }
 
 
@@ -234,12 +232,12 @@ int count_digits(int n) {
  * Auxiliary function which returns the effective size of the hash table.
  */
 int select_hash_size(int size) {
-    int ret = size/3;
+	int ret = size*0.75;
 
-    if (ret == 0)
-        ret = size;
+	if (ret == 0)
+		ret = size;
 
-    return ret;
+	return ret;
 }
 
 
