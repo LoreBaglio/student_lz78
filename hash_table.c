@@ -205,8 +205,8 @@ int hash(struct table_key *key, int size) {
 
     // 1 (key->code) + '\0'
     char* real_key = calloc(1, digits_of_father + 2);
-    real_key[digits_of_father + 1] = '\0';
     sprintf(real_key, "%d%c", key->father, key->code);
+    real_key[digits_of_father + 1] = '\0';
 
     /* Convert our string to an integer */
     while( hashval < ULONG_MAX && i < strlen( real_key  ) ) {
@@ -214,21 +214,14 @@ int hash(struct table_key *key, int size) {
         hashval += real_key[ i ];
         i++;
     }
+    free(real_key);
 
     return hashval % size;
 }
 
 int count_digits(int n) {
 
-    int count=0;
-
-    while(n!=0)
-    {
-        n /= 10;             // n = n/10
-        ++count;
-    }
-
-    return count;
+    return ceil(log10(n + 1));
 }
 
 
