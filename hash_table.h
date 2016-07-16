@@ -46,3 +46,5 @@ void destroy(struct hash_table *);
 int hash(struct table_key*, int);
 int compare_key(struct table_key*, struct table_key*);
 struct entry_table* lookup(struct hash_table*, struct table_key*);
+int count_digits(int);
+int select_hash_size(int);
