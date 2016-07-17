@@ -25,10 +25,10 @@ void decompressor_init(struct decompressor_data *decompressor, int dictionary_si
         	decompressor->dictionary[i].c = c;
        		decompressor->dictionary[i].parent = ROOT;
 
-			if (c == 255)
-				end_loop = 1;
-			else
-				c++;
+		if (c == 255)
+			end_loop = 1;
+		else
+			c++;
     	}
 }
 
@@ -112,10 +112,10 @@ void decompress(const char *input_filename, const char *output_file_name) {
     	if (bitio == NULL){
 		printf("Cannot open input file %s\n", input_filename);
 	
-			if(verbose_flag)
-				printf("Decompression interrupted\n");
+		if(verbose_flag)
+			printf("Decompression interrupted\n");
 
-			exit(1);
+		exit(1);
     	}
 
 	// Open output file
@@ -124,10 +124,10 @@ void decompress(const char *input_filename, const char *output_file_name) {
     	if (output_file == NULL) {
         	printf("Cannot open file %s in write mode\n", output_file_name);
 
-			if(verbose_flag)
-				printf("Decompression interrupted\n");
+		if(verbose_flag)
+			printf("Decompression interrupted\n");
 
-			exit(1);
+		exit(1);
     	}
 
 	// Get the header and check if the file is compressed or not
@@ -139,8 +139,8 @@ void decompress(const char *input_filename, const char *output_file_name) {
 
 		printf("Decompression failed\n");
 
-			if(verbose_flag)
-				printf("error: input file is corrupted\n");
+		if(verbose_flag)
+			printf("error: input file is corrupted\n");
 
 		exit(1);
     	}
@@ -214,7 +214,6 @@ void decompress(const char *input_filename, const char *output_file_name) {
 		// The Element of the array is the Parent Node (Code and Symbol)
 		index = current_node;
 
-
 		// 2. Check if the index is in the dictionary. If not, add the node.
 		if (index > decompressor->node_count) {
 
@@ -228,7 +227,6 @@ void decompress(const char *input_filename, const char *output_file_name) {
 
 			// 4. Symbol Sequence Emission
 			emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent_symbol, &remainder);
-
 
 		} else {
 
@@ -326,12 +324,3 @@ void add_node(struct decompressor_data *decompressor, node previous_node, unsign
 	decompressor->dictionary[new_node_count].c = extracted_parent;
 
 }
-
-
-
-
-
-
-
-
-
