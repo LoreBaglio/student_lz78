@@ -34,22 +34,20 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 	//Init bitio
 	bitio = bitio_open(output_file_name, WRITE);
 	if (bitio == NULL) {
-	printf("Cannot open file %s in write mode\n", output_file_name);
+	    printf("Cannot open file %s in write mode\n", output_file_name);
 	    if(verbose_flag)
 		printf("Compression interrupted\n");
-
-	exit(1);
+	    exit(1);
 	}
 
 	// Open input file (which will be compressed)
 	input_fp = open_file(input_filename, READ);
 
 	if (input_fp == NULL) {
-	printf("Cannot open file %s in read mode\n", input_filename);
+	    printf("Cannot open file %s in read mode\n", input_filename);
 	    if(verbose_flag)
 		printf("Compression interrupted\n");
-
-	exit(1);
+	    exit(1);
 	}
 
 	node_key = calloc(1, sizeof(struct table_key));
@@ -67,7 +65,6 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 		    // Incremental CRC, computed during the compression cycle and attached to the header at the end
 		    step_crc(&remainder, current_symbol);
 		    
-		    
 		    file_content[count++] = current_symbol;		
 
 		    //Prepare key for lookup
@@ -79,7 +76,6 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
 		    if (!found) {
 
-			
 			//Parent node code emission
 			ret = write_code(bitio, bits_per_code, parent_node);
 
