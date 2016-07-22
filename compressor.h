@@ -13,7 +13,7 @@ struct compressor_data {
     node node_count;
 };
 
-
+// Set by the CLI module
 extern int verbose_flag;
 
 void compress(const char*,const char*,int);

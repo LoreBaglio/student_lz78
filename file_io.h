@@ -21,6 +21,7 @@ typedef uint32_t crc;  /* the width of the CRC calculation and result */
 #define MIN_DICTIONARY_SIZE 256
 #define MAX_DICTIONARY_SIZE 65536
 
+// Set by the CLI module
 extern int verbose_flag;
 
 struct file_header {
@@ -36,13 +37,18 @@ struct file_header {
     uint8_t compressed;
 };
 
-
+/**
+utilities
+*/
 void print_header(struct file_header*);
-FILE* open_file(const char* filename, u_int mode);
 void compare_filenames(const char* input_name, const char* output_name);
+
+/**
+functions to open a file, to read data, to write data.
+*/
 void read_data(void* dest, int n, int size, FILE* fp);
 void write_data(void* sr, int n, int size, FILE* fp);
-crc crc32b(uint8_t const message[], int nBytes);
+FILE* open_file(const char* filename, u_int mode);
 
 /**
 write_header() function writes the header of the file. It returns the length of the header.
@@ -60,9 +66,11 @@ get_header() function computes the header of the file.
 void get_header(const char *filename, struct file_header*, int dictionary_size);
 
 /**
-step_crc() function computes the crc of the file.
+step_crc() function computes the crc of the file step by step.
+crc32b() function computes the crc of the file.
 */
 void step_crc(crc* , char);
+crc crc32b(uint8_t const message[], int nBytes);
 
 /**
 check_size() function is called by the compressor. It returns 1 if the compression ended successfully (the size of the compressed file is less than the size of the original file), otherwise it returns 0.

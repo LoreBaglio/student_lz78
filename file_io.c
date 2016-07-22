@@ -49,7 +49,7 @@ void compare_filenames(const char* input_name, const char* output_name)
 FILE* open_file(const char* filename, u_int mode)
 {
 	FILE* fp = NULL;
-	if(filename == NULL || filename[0] == '\0' || mode > 2){
+	if(filename == NULL || filename[0] == '\0' || mode > 1){
 		printf("open_file: filename not valid\n");
 		return NULL;
 	}
