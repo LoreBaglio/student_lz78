@@ -41,7 +41,7 @@ void decompress(const char * input_filename, const char * output_file_name);
 void emit_string(FILE *out, struct elem* dictionary, struct stack* s, node index, unsigned char *parent, crc* remainder);
 void add_node(struct decompressor_data* decompressor, node previous_node, unsigned char extracted_parent);
 
-// Fuctions handling the stack
+// Functions handling the stack
 void stack_init(struct stack* s, int size);
 int stack_push(struct stack* s, unsigned char const c);
 unsigned char stack_pop(struct stack* s);
