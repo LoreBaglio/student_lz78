@@ -34,20 +34,20 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 	//Init bitio
 	bitio = bitio_open(output_file_name, WRITE);
 	if (bitio == NULL) {
-	    printf("Cannot open file %s in write mode\n", output_file_name);
-	    if(verbose_flag)
-		printf("Compression interrupted\n");
-	    exit(1);
+		printf("Cannot open file %s in write mode\n", output_file_name);
+		if(verbose_flag)
+			printf("Compression interrupted\n");
+		exit(1);
 	}
 
 	// Open input file (which will be compressed)
 	input_fp = open_file(input_filename, READ);
 
 	if (input_fp == NULL) {
-	    printf("Cannot open file %s in read mode\n", input_filename);
-	    if(verbose_flag)
-		printf("Compression interrupted\n");
-	    exit(1);
+		printf("Cannot open file %s in read mode\n", input_filename);
+		if(verbose_flag)
+			printf("Compression interrupted\n");
+		exit(1);
 	}
 
 	node_key = calloc(1, sizeof(struct table_key));
@@ -59,60 +59,66 @@ void compress(const char * input_filename, const char* output_file_name, int dic
 
 	while (!feof(input_fp)) {
 
-		// Read a char (Read operation is buffered inside)
+		// 1. Read a char (Read operation is buffered inside)
 		if (fread(&current_symbol, 1, 1, input_fp) != 0) {
 
-		    // Incremental CRC, computed during the compression cycle and attached to the header at the end
-		    step_crc(&remainder, current_symbol);
-		    
-		    file_content[count++] = current_symbol;		
+			// 2. Incremental CRC, computed during the compression cycle and attached to the header at the end
+			step_crc(&remainder, current_symbol);
 
-		    //Prepare key for lookup
-		    node_key->code = current_symbol;
-		    node_key->father = parent_node;
+			file_content[count++] = current_symbol;		
 
-		    // Dictionary lookup
-		    child_node = get(compressor->dictionary, node_key, &found);
+			// Prepare key for lookup
+			node_key->code = current_symbol;
+			node_key->father = parent_node;
 
-		    if (!found) {
+			// 3. Dictionary lookup
+			child_node = get(compressor->dictionary, node_key, &found);
 
-			//Parent node code emission
-			ret = write_code(bitio, bits_per_code, parent_node);
+			// 4. Check if char is found in dictionary
+			if (!found) {
 
-			if (ret < 0){
-			    printf("Error when writing to file %s\n", output_file_name);
-			    if(verbose_flag)
-				printf("Compression interrupted\n");
+				// 4.1 Parent node code emission
+				ret = write_code(bitio, bits_per_code, parent_node);
 
-			    exit(1);
+				if (ret < 0){
+					printf("Error when writing to file %s\n", output_file_name);
+					if(verbose_flag)
+						printf("Compression interrupted\n");
+
+					exit(1);
+				}
+
+				//4.2 Check if dictonary is full
+				if (compressor->node_count >= dictionary_size - 1) {
+					
+					// 4.2.1 Reinitialize dictionary
+					destroy(compressor->dictionary);
+					dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
+
+
+				} else {
+					// 4.2.2 Increment node_count and put as new child id
+					put(compressor->dictionary, node_key, ++compressor->node_count);
+				}
+
+				// Restart from one-char node
+				// Prepare key for lookup
+				node_key->father = ROOT;
+
+				//4.3 Dictionary lookup
+				parent_node = get(compressor->dictionary, node_key, &found);
+
 			}
 
-			// Check if dictonary is full
-			if (compressor->node_count >= dictionary_size - 1) {
-				
-			    destroy(compressor->dictionary);
-			    dictionary_init(compressor, ASCII_ALPHABET, dictionary_size);
-			    //Prepare key for lookup
-			    node_key->code = current_symbol;
-			    node_key->father = ROOT;
-
-			    // Dictionary lookup
-			    parent_node = get(compressor->dictionary, node_key, &found);
-
-			} else {
-			    // Increment node_count and put as new child id
-			    put(compressor->dictionary, node_key, ++compressor->node_count);
-			    // Restart from one-char node
-			    node_key->father = ROOT;
-			    parent_node = get(compressor->dictionary, node_key, &found);
+			else {
+				// 5. Simply update the parent_node pointer 
+				parent_node = child_node;
 			}
-		    }
-		    else {
-			parent_node = child_node;
-		    }
 
 		}
 	}
+
+	// FINAL OPERATIONS
 
 	// Write last code and EOF code
 	write_code(bitio,bits_per_code, parent_node);

@@ -217,15 +217,15 @@ void decompress(const char *input_filename, const char *output_file_name) {
 		// 2. Check if the index is in the dictionary. If not, add the node.
 		if (index > decompressor->node_count) {
 
-			// 3. Add node to the dictionary as child of previous node
-			// (only if previous node is not root (FIRST ITERATION) and if the dictionary is not full)
-			if (previous_node != ROOT && decompressor->node_count < dictionary_size - 1)
+			// 2.1 Add node to the dictionary as child of previous node,
+			// only if previous node is not root (FIRST ITERATION)
+			if (previous_node != ROOT)
 				add_node(decompressor, previous_node, extracted_parent_symbol);
 
 			// Set Leaf for string emission
 			index = decompressor->node_count;
 
-			// 4. Symbol Sequence Emission
+			// 2.2 Symbol Sequence Emission
 			emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent_symbol, &remainder);
 
 		} else {
@@ -233,7 +233,7 @@ void decompress(const char *input_filename, const char *output_file_name) {
 			// 3. Symbol Sequence Emission
 			emit_string(output_file, decompressor->dictionary, s, index, &extracted_parent_symbol, &remainder);
 
-			// 4. Add node to the dictionary as child of previous node, using the first symbol of the current node
+			// 3.1 Add node to the dictionary as child of previous node, using the first symbol of the current node
 			if (previous_node != ROOT){
 				if (decompressor->node_count < dictionary_size - 1)
 					add_node(decompressor, previous_node, extracted_parent_symbol);
@@ -245,7 +245,7 @@ void decompress(const char *input_filename, const char *output_file_name) {
 
 		}
 
-		// 5. Set the received node as previous_node.
+		// 4. Set the received node as previous_node.
 		// On the next iteration this node will achieve a new child,
 		// with extracted_parent_symbol as link symbol.
 		previous_node = current_node;
