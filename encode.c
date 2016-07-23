@@ -48,7 +48,7 @@ int compressor_bitio_close(struct bitio *b, unsigned char *content, struct file_
 		errno = EINVAL;
 		return -1;
 	}
-	if(b->mode == 1 && b->wp > 0){
+	if(b->mode == WRITE && b->wp > 0){
 		if(fwrite ((void*)&b->data, 1, (b->wp + 7)/8, b->f) != (b->wp + 7)/8){
 			return -1;
 		}
